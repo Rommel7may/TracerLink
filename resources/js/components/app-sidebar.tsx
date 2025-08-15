@@ -4,25 +4,26 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Mail, UsersIcon,ChartLine, Link2  } from 'lucide-react';
+import { BookOpen, Folder, LayoutDashboard, MailPlus, UsersIcon,ChartLine, Link2  } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
-        icon: LayoutGrid,
+        icon: LayoutDashboard,
     },
     {
         title: 'Sending Email Form',
         href: '/send',
-        icon: Mail,
+        icon: MailPlus,
     },
     {
         title: 'Alumni List',
         href: '/list',
         icon: UsersIcon,
     },
+    
     {
         title: 'Data Analytics',
         href: '/data',
@@ -30,8 +31,13 @@ const mainNavItems: NavItem[] = [
     },
      {
         title: 'Send Job Email',
-        href: '/job',
+        href: '/jobpost',
         icon: Link2,
+    },
+    {
+        title: 'program',
+        href: '/program',
+        icon: BookOpen,
     },
 ];
 
@@ -56,7 +62,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/dashboard" prefetch>
-                                <AppLogo />
+                                <AppLogo/>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
