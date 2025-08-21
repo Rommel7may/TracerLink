@@ -119,6 +119,7 @@ export default function PursuingStudiesChart({ programId, year }: Props) {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
+                stroke='none'
                 innerRadius={60} // 🎯 Donut style
                 outerRadius={100}
                 label={({ name, percent }) =>

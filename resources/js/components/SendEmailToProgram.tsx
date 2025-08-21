@@ -19,25 +19,19 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import axios from "axios"
-import {
-  FormInputIcon,
-  Share2Icon,
-  DownloadIcon,
-} from "lucide-react"
-
-const programs = [
-  "BS INFORMATION TECHNOLOGY",
-  "BS BUSINESS ADMINISTRATION",
-  "BS ENTREPRENEURSHIP",
-  "BS PSYCHOLOGY",
-  "BS CIVIL ENGINEERING",
-  "Bachelor of Elementary Education",
-  "BS Tourism Management",
-]
+import { FormInputIcon, Share2Icon } from "lucide-react"
 
 export function SendEmailToProgram() {
   const [open, setOpen] = React.useState(false)
   const [selectedProgram, setSelectedProgram] = React.useState("")
+  const [programs, setPrograms] = React.useState<string[]>([])
+
+  // Fetch programs dynamically from API
+  React.useEffect(() => {
+    axios.get("/students/programs")
+      .then((res) => setPrograms(res.data))
+      .catch((err) => console.error("Failed to fetch programs", err))
+  }, [])
 
   const handleSend = async () => {
     if (!selectedProgram) {
@@ -75,8 +69,6 @@ export function SendEmailToProgram() {
     toast.success("Form link copied to clipboard! 📎")
   }
 
- 
-
   return (
     <div className="flex gap-2 flex-wrap">
       {/* 🔗 Share Link */}
@@ -84,8 +76,6 @@ export function SendEmailToProgram() {
         <Share2Icon className="w-4 h-4 mr-2" />
         Share Link
       </Button>
-
-
 
       {/* 📧 Send Email Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
@@ -99,19 +89,27 @@ export function SendEmailToProgram() {
           <DialogHeader>
             <DialogTitle>Select a Program</DialogTitle>
           </DialogHeader>
+
           <Select value={selectedProgram} onValueChange={setSelectedProgram}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose a program..." />
             </SelectTrigger>
             <SelectContent>
-              {programs.map((prog) => (
-                <SelectItem key={prog} value={prog}>
-                  {prog}
+              {programs.length ? (
+                programs.map((prog) => (
+                  <SelectItem key={prog} value={prog}>
+                    {prog}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem disabled value="">
+                  No programs available
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
-          <DialogFooter>
+
+          <DialogFooter className="flex justify-end gap-2">
             <Button onClick={handleSend}>Send</Button>
             <Button variant="ghost" onClick={() => setOpen(false)}>
               Cancel

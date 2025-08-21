@@ -112,6 +112,7 @@ export default function LocationPieChart({ programId, year }: Props) {
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
+                stroke='none'
                 outerRadius={100}
                 label={({ name, percent }) =>
                   `${name} (${(percent * 100).toFixed(1)}%)`

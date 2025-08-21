@@ -11,6 +11,7 @@ use App\Http\Controllers\{
     JobPostController,
     AlumniFormController,
     UpdateAlumniFormController,
+    JobFormController,
     ChartController,
     AlumniExportController,
     UpdateEmailController,
@@ -18,8 +19,8 @@ use App\Http\Controllers\{
     LocationController,
     ProgramController,
     DashboardController,
-    PursuingStudiesController,   // ✅ Chart 4: Pursuing Further Studies
-    TotalGraduatesController     // ✅ Chart 5: Total Graduates
+    PursuingStudiesController,
+    TotalGraduatesController
 };
 
 // 🌐 Public Welcome Page
@@ -62,6 +63,9 @@ Route::get('/test-email-view', fn () => view('emails.AlumniUpdateForm', [
     'formUrl' => url('/alumni-update-form/2023-00001'),
 ]))->name('test.email.view');
 
+// ✅ Public Job Form Link (from email)
+Route::get('/job-form/{alumni}', [JobFormController::class, 'show'])->name('job-form.show');
+
 // 🔐 Admin-Only Authenticated Routes
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -86,6 +90,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
     Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
 
+    // ✅ API Route for Dynamic Programs Dropdown
+    Route::get('/students/programs', [StudentController::class, 'programList'])->name('students.programs');
+
     // 📦 Resource Controllers
     Route::resource('/send', SendController::class)->only(['index', 'create', 'store']);
     Route::resource('/list', ListController::class);
@@ -99,13 +106,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/programs', fn () => \App\Models\Program::all());
 });
 
-    // 📍 Job Posts
-    
+// 📍 Job Posts
 Route::get('/job-posts', [JobPostController::class, 'index'])->name('job-posts.index');
 Route::post('/job-posts', [JobPostController::class, 'store'])->name('job-posts.store');
 Route::put('/job-posts/{job_post}', [JobPostController::class, 'update'])->name('job-posts.update');
 Route::delete('/job-posts/{job_post}', [JobPostController::class, 'destroy'])->name('job-posts.destroy');
+
+// ✅ Send email to unemployed alumni by program
 Route::post('/job-posts/send-email', [JobPostController::class, 'sendEmail'])->name('job-posts.send-email');
+
+// ✅ Send email to all employed alumni (NEW)
+Route::post('/job-posts/send-email-to-all-employed', [JobPostController::class, 'sendEmailToAllEmployed'])->name('job-posts.send-email-to-all-employed');
+Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete']);
+
+Route::post('/students/import', [StudentController::class, 'import']);
 
 // 🧩 Include extra route files
 require __DIR__ . '/settings.php';

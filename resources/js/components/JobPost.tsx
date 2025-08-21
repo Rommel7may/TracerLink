@@ -9,6 +9,7 @@ import { useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import axios from 'axios';
+import { PageProps as InertiaPageProps } from '@inertiajs/core';
 
 // Types
 interface Job {
@@ -17,22 +18,28 @@ interface Job {
   description: string;
 }
 
-interface PageProps {
+interface Program {
+  id: number;
+  name: string;
+}
+
+interface PageProps extends InertiaPageProps {
   jobs?: Job[];
-  [key: string]: unknown;
+  programs?: Program[];
 }
 
 export default function JobPost() {
-  const { jobs = [] } = usePage<PageProps>().props;
+  const { jobs = [], programs = [] } = usePage<PageProps>().props;
+
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<number | ''>('');
 
   const { data, setData, post, put, delete: destroy, processing, reset } = useForm({
     title: '',
     description: '',
   });
 
-  
   // Open add modal
   const openAdd = () => {
     reset();
@@ -78,19 +85,43 @@ export default function JobPost() {
     }
   };
 
-  // Handle sending email to unemployed alumni
-const sendEmail = (jobId: number) => {
-  if (confirm('Send this job to all unemployed alumni?')) {
-    axios.post(route('job-posts.send-email'), { job_id: jobId })
-      .then(() => toast.success('Emails sent successfully'))
-      .catch(() => toast.error('Failed to send emails'));
-  }
-};
+  // Send email to unemployed alumni by program
+  const sendEmail = (jobId: number) => {
+    if (!selectedProgram) {
+      toast.error('Please select a program before sending.');
+      return;
+    }
 
+    if (confirm('Send this job to unemployed alumni in the selected program?')) {
+      axios
+        .post(route('job-posts.send-email'), {
+          job_id: jobId,
+          program_id: selectedProgram,
+        })
+        .then(() => toast.success('Emails sent successfully'))
+        .catch(() => toast.error('No Unemployed found in this program'));
+    }
+  };
+
+  // Send email to all employed alumni (new separate button)
+  const sendEmailToAllEmployed = () => {
+    if (confirm('Send email to ALL employed alumni?')) {
+      axios
+        .post(route('job-posts.send-email-to-all-employed')) // Make sure route matches web.php
+        .then(() => toast.success('Emails sent to all employed alumni!'))
+        .catch(() => toast.error('Failed to send emails.'));
+    }
+  };
 
   return (
     <div className="p-6 space-y-4">
-      <Button onClick={openAdd}>Add Job Post</Button>
+      {/* Header Buttons */}
+      <div className="flex gap-2">
+        <Button onClick={openAdd}>Add Job Post</Button>
+        <Button variant="secondary" onClick={sendEmailToAllEmployed}>
+          Send Email to All Employed
+        </Button>
+      </div>
 
       {/* Add/Edit Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
@@ -118,43 +149,53 @@ const sendEmail = (jobId: number) => {
         </DialogContent>
       </Dialog>
 
+      {/* Program Selector */}
+      <div>
+        <label className="block mb-1 font-medium">Select Program for Email</label>
+        <select
+          className="border rounded p-2 w-full max-w-sm"
+          value={selectedProgram}
+          onChange={(e) => setSelectedProgram(Number(e.target.value) || '')}
+        >
+          <option value="">-- Select Program --</option>
+          {programs.map((prog) => (
+            <option key={prog.id} value={prog.id}>
+              {prog.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Job Posts Table */}
       <Table className="w-full border rounded-lg">
         <TableHeader>
-          <TableRow className="bg-gray-100 dark:bg-gray-800">
+          <TableRow>
             <TableHead className="w-1/4">Title</TableHead>
             <TableHead className="w-2/4">Description</TableHead>
             <TableHead className="w-1/4 text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
-       <TableBody>
-  {jobs.length > 0 ? (
-    jobs.map((job) => (
-      <TableRow key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-        <TableCell className="font-medium">{job.title}</TableCell>
-        <TableCell>{job.description}</TableCell>
-        <TableCell className="text-center space-x-2">
-          <Button size="sm" onClick={() => openEdit(job)}>Edit</Button>
-          <Button size="sm" variant="destructive" onClick={() => handleDelete(job.id)}>Delete</Button>
-          <Button
-  size="sm"
-  variant="secondary"
-  onClick={() => sendEmail(job.id)}
->
-  Send to Unemployed
-</Button>
-        </TableCell>
-      </TableRow>
-    ))
-  ) : (
-    <TableRow>
-      <TableCell colSpan={3} className="text-center text-gray-500">
-        No job posts found
-      </TableCell>
-    </TableRow>
-  )}
-</TableBody>
-
+        <TableBody>
+          {jobs.length > 0 ? (
+            jobs.map((job) => (
+              <TableRow key={job.id}>
+                <TableCell className="font-medium">{job.title}</TableCell>
+                <TableCell>{job.description}</TableCell>
+                <TableCell className="text-center space-x-2">
+                  <Button size="sm" onClick={() => openEdit(job)}>Edit</Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(job.id)}>Delete</Button>
+                  <Button size="sm" variant="secondary" onClick={() => sendEmail(job.id)}>Send Email</Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={3} className="text-center text-gray-500">
+                No job posts found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
       </Table>
     </div>
   );

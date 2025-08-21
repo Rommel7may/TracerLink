@@ -126,6 +126,7 @@ export default function RelatedChart({ programId, year }: Props) {
                   backgroundColor: 'white',
                   color: '#1f2937',
                   borderRadius: 8,
+                  stroke: 'none',
                   fontSize: 13,
                   border: '1px solid #e5e7eb',
                 }}
