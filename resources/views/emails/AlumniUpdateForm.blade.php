@@ -17,7 +17,7 @@
                     </text>
                 </svg>
 
-                <h2 style="color: #FFD700; margin: 10px 0 0;">Don Honorio Ventura State University</h2>
+                <h2 style="color: #FFD700; margin: 10px 0 0;">PAMPANGA STATE UNIVERSITY</h2>
                 <p style="color: #f3f3f3; margin: 0;">Alumni Tracer System</p>
             </td>
         </tr>
@@ -39,9 +39,9 @@
                     ">Update My Alumni Record</a>
                 </p>
 
-                <p>Thank you for helping us keep DHVSU’s alumni records accurate and meaningful.</p>
+                <p>Thank you for helping us keep PAMPANGA STATE U - LC's alumni records accurate and meaningful.</p>
 
-                <p style="color: #999;">This is an automated email sent by DHVSU Alumni Tracer System.</p>
+                <p style="color: #999;">This is an automated email sent byPAMPANGA STATE U - LC's Alumni Tracer System.</p>
             </td>
         </tr>
     </table>

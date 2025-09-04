@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumni;
+use App\Models\Program;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -15,31 +16,37 @@ class AlumniExportController extends Controller
     public function export()
     {
         try {
-            $alumni = Alumni::all();
+            $alumni = Alumni::with('program')->get();
 
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Alumni List');
 
-            // 🎓 Headers — match these with AlumniForm.tsx
-            $headers = [
-                'Student Number',
-                'Email',
-                'Program',
-                'Last Name',
-                'Given Name',
-                'Middle Initial',
-                'Present Address',
-                'Active Email',
-                'Contact Number',
-                'Graduation Year',
-                'Employment Status',
-                'Further Studies',
-                'Sector',
-                'Work Location',
-                'Employer Classification',
-                'Consent Given',
-            ];
+            // 🎓 Headers — match DB structure
+           // 🎓 Headers — match frontend table
+$headers = [
+    'Student Number',
+    'Email',
+    'Program',
+    'Last Name',
+    'Given Name',
+    'Middle Initial',
+    'Sex',                     // ✅ Added
+    'Present Address',
+    'Active Email',
+    'Contact Number',
+    'Graduation Year',
+    'Employment Status',
+    'Company Name',
+    'Further Studies',
+    'Sector',
+    'Work Location',
+    'Employer Classification',
+    'Related To Course',
+    'Consent Given',
+    'Instruction Rating',
+];
+
 
             $sheet->fromArray($headers, null, 'A1');
 
@@ -47,27 +54,33 @@ class AlumniExportController extends Controller
             $rowIndex = 2;
             foreach ($alumni as $a) {
                 $sheet->fromArray([
-                    $a->student_number,
-                    $a->email,
-                    $a->program,
-                    $a->last_name,
-                    $a->given_name,
-                    $a->middle_initial,
-                    $a->present_address,
-                    $a->active_email,
-                    $a->contact_number,
-                    $a->graduation_year,
-                    $a->employment_status,
-                    $a->further_studies,
-                    $a->sector,
-                    $a->work_location,
-                    $a->employer_classification,
-                    $a->consent ? 'Yes' : 'No',
-                ], null, 'A' . $rowIndex++);
+    $a->student_number,
+    $a->email,
+    $a->program ? $a->program->name : null,
+    $a->last_name,
+    $a->given_name,
+    $a->middle_initial,
+    $a->sex,                                    // ✅ Added
+    $a->present_address,
+    $a->active_email,
+    $a->contact_number,
+    $a->graduation_year,
+    $a->employment_status,
+    $a->company_name,
+    $a->further_studies,
+    $a->sector,
+    $a->work_location,
+    $a->employer_classification,
+    $a->related_to_course,
+    $a->consent ? 'Yes' : 'No',
+    $a->instruction_rating,
+], null, 'A' . $rowIndex++);
+
             }
 
             // ✨ Header styling
-            $sheet->getStyle('A1:P1')->applyFromArray([
+            $lastCol = chr(64 + count($headers)); // compute last column (e.g., S for 19 cols)
+            $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
                 'font' => ['bold' => true],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 'fill' => [
@@ -80,13 +93,13 @@ class AlumniExportController extends Controller
             ]);
 
             // 🔄 Auto-size columns
-            foreach (range('A', 'P') as $col) {
+            foreach (range('A', $lastCol) as $col) {
                 $sheet->getColumnDimension($col)->setAutoSize(true);
             }
 
             // 📏 Apply border to all cells
             $lastRow = $rowIndex - 1;
-            $sheet->getStyle("A1:P$lastRow")->applyFromArray([
+            $sheet->getStyle("A1:{$lastCol}{$lastRow}")->applyFromArray([
                 'borders' => [
                     'allBorders' => ['borderStyle' => Border::BORDER_THIN],
                 ],

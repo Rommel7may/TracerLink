@@ -23,6 +23,12 @@ export default function JobFormForEmail({ alumni, onSuccess }: JobFormProps) {
   const { data, setData, post, processing, reset } = useForm({
     title: '',
     description: '',
+    company_name: '',
+    location: '',
+    requirements: '',
+    responsibilities: '',
+    apply_link: '',
+    status: 'active', // default active
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,11 +47,13 @@ export default function JobFormForEmail({ alumni, onSuccess }: JobFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Hello, {alumni.given_name}!</DialogTitle>
         </DialogHeader>
-        <p className="mb-4">Please fill out the form below to create a new job post.</p>
+        <p className="mb-4 text-sm text-gray-600">
+          Please fill out the job post details below.
+        </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             placeholder="Job Title"
@@ -58,6 +66,32 @@ export default function JobFormForEmail({ alumni, onSuccess }: JobFormProps) {
             value={data.description}
             onChange={(e) => setData('description', e.target.value)}
             required
+          />
+          <Input
+            placeholder="Company Name"
+            value={data.company_name}
+            onChange={(e) => setData('company_name', e.target.value)}
+            required
+          />
+          <Input
+            placeholder="Location (optional)"
+            value={data.location}
+            onChange={(e) => setData('location', e.target.value)}
+          />
+          <Textarea
+            placeholder="Requirements (optional)"
+            value={data.requirements}
+            onChange={(e) => setData('requirements', e.target.value)}
+          />
+          <Textarea
+            placeholder="Responsibilities (optional)"
+            value={data.responsibilities}
+            onChange={(e) => setData('responsibilities', e.target.value)}
+          />
+          <Input
+            placeholder="Apply Link (optional)"
+            value={data.apply_link}
+            onChange={(e) => setData('apply_link', e.target.value)}
           />
           <DialogFooter>
             <Button type="submit" disabled={processing}>

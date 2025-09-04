@@ -4,6 +4,8 @@ import { SectionCards } from "@/components/card"
 import { AlumniBarChart } from "@/components/alumni-bar-chart"
 import AlumniRatingBarChart from "@/components/dashboard/AlumniRatingBarChart"
 import { type BreadcrumbItem } from "@/types"
+import { GraduatesLineChart } from "@/components/OverviewGrar"
+import GenderChart from "@/components/GenderChart"
 
 type Program = {
   id: number
@@ -16,6 +18,7 @@ type AlumniPerYear = {
   total: number
   employed: number
   unemployed: number
+  nottracked: number
 }
 
 type RatingCount = {
@@ -45,29 +48,54 @@ export default function Dashboard({
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Dashboard" />
 
-      <div className="flex flex-col gap-10 p-6">
+      <div className="flex flex-col gap-8 p-6 min-h-screen">
+        {/* Page Header */}
+        <div className="flex flex-col gap-1">
+        </div>
+
         {/* 🎓 Program Summary */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-primary tracking-tight">
-            Program Summary
-          </h2>
+        <div className="">
           <SectionCards programs={programs} />
         </div>
 
-        {/* 👨‍💼 Alumni Employment Chart */}
-        <div>
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            Alumni Employment Overview
-          </h3>
-          <AlumniBarChart alumniPerYear={alumniPerYear} />
-        </div>
+        {/* Grid Layout for Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Graduates Line Chart */}
+          <div className="gap-7">
+            <div className="">
+            
+            </div >
+            <GraduatesLineChart />
+            <div className="mt-6">
+               <AlumniRatingBarChart ratingCounts={ratingCounts} />
+            </div>
+            
+          </div>
 
-        {/* ⭐ Instruction Rating Chart */}
-        <div>
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            Instruction Rating Overview
-          </h3>
-          <AlumniRatingBarChart ratingCounts={ratingCounts} />
+          {/* Gender Distribution Chart */}
+          <div>
+            <div className="">
+             
+            </div>
+            <GenderChart />
+            <div className="mt-20">
+              <AlumniBarChart alumniPerYear={alumniPerYear} />
+            </div>
+             
+                
+          </div>
+
+          {/* Alumni Employment Chart */}
+          <div>
+            <div className="">
+            </div>
+         
+          </div>
+
+       
+           
+          
+          
         </div>
       </div>
     </AppLayout>

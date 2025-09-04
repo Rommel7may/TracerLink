@@ -7,7 +7,9 @@ import axios from "axios"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { StarRating } from "@/components/StarRating";
+import { StarRating } from "@/components/StarRating"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle, X } from "lucide-react"
 
 import {
   Select,
@@ -22,6 +24,7 @@ export default function UpdateForm() {
   const alumni = props.alumni as Record<string, any>
 
   const [programs, setPrograms] = useState<{ id: number; name: string }[]>([])
+  const [submissionComplete, setSubmissionComplete] = useState(false)
 
   useEffect(() => {
     axios.get("/api/programs").then((res) => setPrograms(res.data))
@@ -34,12 +37,14 @@ export default function UpdateForm() {
     last_name: alumni.last_name || "",
     given_name: alumni.given_name || "",
     middle_initial: alumni.middle_initial || "",
+    sex: alumni.sex || "",
     present_address: alumni.present_address || "",
     active_email: alumni.active_email || "",
     contact_number: alumni.contact_number || "",
     graduation_year: alumni.graduation_year || "",
     employment_status: alumni.employment_status || "",
     company_name: alumni.company_name || "",
+    work_position: alumni.work_position || "",
     related_to_course: alumni.related_to_course || "",
     further_studies: alumni.further_studies || "",
     sector: alumni.sector || "",
@@ -57,6 +62,7 @@ export default function UpdateForm() {
     const cleanedData = {
       ...data,
       company_name: isEmployed ? data.company_name : "",
+      work_position: isEmployed ? data.work_position : "",
       related_to_course: isEmployed ? data.related_to_course : "",
       sector: isEmployed ? data.sector : "",
       work_location: isEmployed ? data.work_location : "",
@@ -64,11 +70,12 @@ export default function UpdateForm() {
     }
 
     put(`/alumni-update-form/${alumni.student_number}`, {
-      data: cleanedData,
+      // data: cleanedData,
       preserveScroll: true,
       onSuccess: () => {
         toast.success("✅ Successfully updated your alumni record!")
-        setTimeout(() => window.close(), 1000)
+        setSubmissionComplete(true)
+        setTimeout(() => window.close(), 2000)
       },
       onError: (errors) => {
         const messages = Object.values(errors).filter(Boolean).join(", ")
@@ -83,9 +90,50 @@ export default function UpdateForm() {
     (_, i) => `${currentYear - i}`
   )
 
+  if (submissionComplete) {
+    return (
+      <div className="mx-auto max-w-2xl p-6">
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="rounded-t-lg bg-gradient-to-r from-green-500/10 to-green-500/5">
+            <div className="flex justify-end">
+              <Button variant="ghost" size="icon" onClick={() => window.close()}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex flex-col items-center justify-center py-6">
+              <CheckCircle className="h-16 w-16 text-green-500" />
+              <CardTitle className="mt-4 text-center text-3xl font-bold text-green-600">
+                Thank You!
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6 text-center">
+            <p className="text-lg text-muted-foreground">
+                Alumni information has been updated successfully.
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              We appreciate your time and contribution.
+            </p>
+            {/* <Button 
+              className="mt-6 h-12 w-full text-lg font-semibold" 
+              onClick={() => window.close()}
+            >
+              Close
+            </Button> */}
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Update Your Alumni Information</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Update Your Alumni Information</h1>
+        <Button variant="ghost" size="icon" onClick={() => window.close()}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -125,6 +173,18 @@ export default function UpdateForm() {
           <Input value={data.middle_initial} onChange={(e) => setData("middle_initial", e.target.value)} />
         </div>
 
+        {/* Gender Field */}
+        <div>
+          <label className="block mb-1 text-sm font-medium">Sex</label>
+          <Select value={data.sex} onValueChange={(val) => setData("sex", val)}>
+            <SelectTrigger><SelectValue placeholder="Select Sex" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">Male</SelectItem>
+              <SelectItem value="female">Female</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div>
           <label className="block mb-1 text-sm font-medium">Present Address</label>
           <Input value={data.present_address} onChange={(e) => setData("present_address", e.target.value)} />
@@ -158,6 +218,7 @@ export default function UpdateForm() {
             setData("employment_status", val)
             if (val !== "employed") {
               setData("company_name", "")
+              setData("work_position", "")
               setData("related_to_course", "")
               setData("sector", "")
               setData("work_location", "")
@@ -167,10 +228,8 @@ export default function UpdateForm() {
             <SelectTrigger><SelectValue placeholder="Select Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="employed">Employed</SelectItem>
-              <SelectItem value="under-employed">Under Employed</SelectItem>
               <SelectItem value="unemployed">Unemployed</SelectItem>
-              <SelectItem value="self-employed">Self Employed</SelectItem>
-              <SelectItem value="currently-looking">Currently Looking</SelectItem>
+              <SelectItem value="not-tracked">Not Tracked</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -180,6 +239,11 @@ export default function UpdateForm() {
             <div>
               <label className="block mb-1 text-sm font-medium">Company Name</label>
               <Input value={data.company_name} onChange={(e) => setData("company_name", e.target.value)} />
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm font-medium">Work Position</label>
+              <Input value={data.work_position} onChange={(e) => setData("work_position", e.target.value)} />
             </div>
 
             <div>
@@ -244,13 +308,11 @@ export default function UpdateForm() {
         </div>
 
         <div className="col-span-2">
-  
-  <StarRating
-    value={data.instruction_rating}
-    onChange={(value) => setData("instruction_rating", value)}
-  />
-</div>
-
+          <StarRating
+            value={data.instruction_rating}
+            onChange={(value) => setData("instruction_rating", value)}
+          />
+        </div>
 
         <div className="col-span-2 flex items-start gap-2">
           <input

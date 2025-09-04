@@ -8,7 +8,7 @@ export default function AppLogo() {
       </div>
       <div className="grid flex-1 text-left text-sm">
         <span className="font-semibold leading-tight text-foreground">
-          DLC TRACERLINK
+          PAMPANGA STATE U - LC TRACERLINK
         </span>
       </div>
     </div>

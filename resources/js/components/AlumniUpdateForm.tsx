@@ -18,12 +18,14 @@ interface AlumniUpdateFormProps {
   last_name?: string
   given_name?: string
   middle_initial?: string
+  gender?: string
   present_address?: string
   active_email?: string
   contact_number?: string
   graduation_year?: string
   employment_status?: string
   company_name?: string
+  work_position?: string        // ✅ Added
   further_studies?: string
   sector?: string
   work_location?: string
@@ -40,12 +42,14 @@ export default function AlumniUpdateForm({
   last_name = '',
   given_name = '',
   middle_initial = '',
+  gender = '',
   present_address = '',
   active_email = '',
   contact_number = '',
   graduation_year = '',
   employment_status = '',
   company_name = '',
+  work_position = '',           // ✅ Default
   further_studies = '',
   sector = '',
   work_location = '',
@@ -61,12 +65,14 @@ export default function AlumniUpdateForm({
     last_name,
     given_name,
     middle_initial,
+    gender,
     present_address,
     active_email,
     contact_number,
     graduation_year,
     employment_status,
     company_name,
+    work_position,              // ✅ Included in form state
     further_studies,
     sector,
     work_location,
@@ -100,7 +106,7 @@ export default function AlumniUpdateForm({
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto grid max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
-      <h2 className="col-span-2 text-2xl font-bold">Update Alumni Record</h2>
+      <h2 className="col-span-2 text-2xl font-bold">Update AluRecwrynrthbtord</h2>
 
       <div className="col-span-2">
         <label className="text-sm font-medium text-gray-700 mb-1 block">Student Number</label>
@@ -125,6 +131,16 @@ export default function AlumniUpdateForm({
       <Input placeholder="Last Name" value={data.last_name} onChange={(e) => setData('last_name', e.target.value)} />
       <Input placeholder="Given Name" value={data.given_name} onChange={(e) => setData('given_name', e.target.value)} />
       <Input placeholder="Middle Initial" value={data.middle_initial} onChange={(e) => setData('middle_initial', e.target.value)} />
+
+      {/* ✅ Gender Select */}
+      <Select value={data.gender} onValueChange={(value) => setData('gender', value)}>
+        <SelectTrigger><SelectValue placeholder="Gender" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="Male">Male</SelectItem>
+          <SelectItem value="Female">Female</SelectItem>
+        </SelectContent>
+      </Select>
+
       <Input placeholder="Present Address" value={data.present_address} onChange={(e) => setData('present_address', e.target.value)} />
       <Input type="email" placeholder="Active Email" value={data.active_email} onChange={(e) => setData('active_email', e.target.value)} />
       <Input placeholder="Contact Number" value={data.contact_number} onChange={(e) => setData('contact_number', e.target.value)} />
@@ -142,7 +158,10 @@ export default function AlumniUpdateForm({
         value={data.employment_status}
         onValueChange={(value) => {
           setData('employment_status', value)
-          if (value !== 'employed') setData('company_name', '')
+          if (value !== 'employed') {
+            setData('company_name', '')
+            setData('work_position', '')   // ✅ Clear if not employed
+          }
         }}
       >
         <SelectTrigger><SelectValue placeholder="Employment Status" /></SelectTrigger>
@@ -155,11 +174,18 @@ export default function AlumniUpdateForm({
       </Select>
 
       {data.employment_status === 'employed' && (
-        <Input
-          placeholder="Company Name"
-          value={data.company_name}
-          onChange={(e) => setData('company_name', e.target.value)}
-        />
+        <>
+          <Input
+            placeholder="Company Name"
+            value={data.company_name}
+            onChange={(e) => setData('company_name', e.target.value)}
+          />
+          <Input
+            placeholder="Position / Nature of Work"    // ✅ Work Position Field
+            value={data.work_position}
+            onChange={(e) => setData('work_position', e.target.value)}
+          />
+        </>
       )}
 
       <Select value={data.related_to_course} onValueChange={(value) => setData('related_to_course', value)}>

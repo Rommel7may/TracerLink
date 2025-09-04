@@ -5,10 +5,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import JobPost from '@/components/JobPost';
 
-type Program = {
-  id: number;
-  name: string;
-};
+
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -21,7 +18,7 @@ export default function Data() {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Data" />
+      <Head title="Job Opportunity" />
 
 <div>
     <JobPost/>

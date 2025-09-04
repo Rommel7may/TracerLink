@@ -18,9 +18,8 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from '@/components/ui/card';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Users, Calendar } from 'lucide-react';
 
 type ChartItem = {
   year: string;
@@ -33,15 +32,16 @@ type Props = {
   year?: string;
 };
 
-const GRADIENT_ID = 'gradProgram';
-const BAR_COLORS = ['#6366f1', '#818cf8']; // Indigo
+const BAR_COLORS = ['#3b82f6', '#2563eb', '#1d4ed8']; // Blue gradient
 
 export default function TotalGraduatesChart({ programId, year }: Props) {
   const [data, setData] = useState<ChartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const res = await axios.get('/chart/total-graduates', {
           params: { program_id: programId, year },
         });
@@ -59,82 +59,149 @@ export default function TotalGraduatesChart({ programId, year }: Props) {
         setData(processed);
       } catch (err) {
         console.error('Failed to fetch graduate chart data:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [programId, year]);
 
+  // Calculate statistics for the footer
+  const totalGraduates = data.reduce((sum, item) => sum + item.total, 0);
+  const averagePerYear = data.length > 0 ? Math.round(totalGraduates / data.length) : 0;
+  const maxGraduates = Math.max(...data.map(item => item.total), 0);
+
+  const getBarColor = (value: number, maxValue: number) => {
+    if (maxValue === 0) return BAR_COLORS[0];
+    const percentage = (value / maxValue) * 100;
+    if (percentage > 75) return BAR_COLORS[2];
+    if (percentage > 40) return BAR_COLORS[1];
+    return BAR_COLORS[0];
+  };
+
   return (
-    <Card className="w-full h-full rounded-2xl border shadow-sm bg-background text-foreground">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">Total Graduates</CardTitle>
-        <CardDescription className="text-sm text-muted-foreground">
-          Number of alumni graduates by year
-        </CardDescription>
+    <Card className="w-full h-full rounded-xl border shadow-sm bg-background text-foreground">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold">Response Trends</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              Number of alumni response by year
+            </CardDescription>
+          </div>
+          <div className="p-2 rounded-full bg-blue-100">
+            <Users className="h-5 w-5 text-blue-600" />
+          </div>
+        </div>
       </CardHeader>
 
       <CardContent>
-        {data.length === 0 ? (
+        {isLoading ? (
           <div className="text-center text-muted-foreground py-12">
-            No data available
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+            </div>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="text-center text-muted-foreground py-12">
+            <Calendar className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+            <p>No graduation data available</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={Math.max(220, data.length * 45)}>
-            <BarChart
-              layout="vertical"
-              data={data}
-              margin={{ top: 10, right: 80, bottom: 10, left: 30 }}
-            >
-              <defs>
-                <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor={BAR_COLORS[0]} />
-                  <stop offset="100%" stopColor={BAR_COLORS[1]} />
-                </linearGradient>
-              </defs>
+          <div className="space-y-4">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-blue-50 rounded-lg p-3">
+                <div className="text-2xl font-bold text-blue-700">{totalGraduates}</div>
+                <div className="text-xs text-blue-600">Total Graduates</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-2xl font-bold text-gray-700">{data.length}</div>
+                <div className="text-xs text-gray-600">Years Tracked</div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-3">
+                <div className="text-2xl font-bold text-green-700">{averagePerYear}</div>
+                <div className="text-xs text-green-600">Avg per Year</div>
+              </div>
+            </div>
 
-              <XAxis
-                type="number"
-                tick={{ fontSize: 12, fill: 'currentColor' }}
-                axisLine={{ stroke: 'currentColor' }}
-              />
-              <YAxis
-                type="category"
-                dataKey="year"
-                tick={{ fontSize: 12, fill: 'currentColor' }}
-                axisLine={{ stroke: 'currentColor' }}
-              />
+            {/* Chart */}
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={data}
+                  margin={{ top: 10, right: 30, bottom: 10, left: 40 }}
+                >
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: '#6b7280' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="year"
+                    tick={{ fontSize: 11, fill: '#374151' }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={40}
+                  />
 
-              <Tooltip
-                formatter={(value: number, name: string, props: any) => {
-                  const percent = props.payload.percent;
-                  return [`${value} (${percent})`, 'Graduates'];
-                }}
-                labelStyle={{ fontWeight: 'bold', fontSize: '0.875rem' }}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  borderRadius: 8,
-                  borderColor: '#e5e7eb',
-                  color: '#111827',
-                }}
-              />
+                  <Tooltip
+                    formatter={(value: number) => [`${value} graduates`, 'Count']}
+                    labelFormatter={(label) => `Year: ${label}`}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      borderRadius: 8,
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      color: '#111827',
+                      fontSize: '13px',
+                    }}
+                    labelStyle={{ 
+                      fontWeight: 600,
+                      marginBottom: '4px',
+                      color: '#1f2937'
+                    }}
+                  />
 
-              <Bar dataKey="total" fill={`url(#${GRADIENT_ID})`} radius={[4, 4, 4, 4]}>
-                <LabelList dataKey="percent" position="right" fill="currentColor" fontSize={12} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+                  <Bar dataKey="total" radius={[0, 4, 4, 0]}>
+                    {data.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={getBarColor(entry.total, maxGraduates)}
+                      />
+                    ))}
+                    <LabelList
+                      dataKey="total"
+                      position="right"
+                      fill="#374151"
+                      fontSize={11}
+                      fontWeight={500}
+                    />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         )}
       </CardContent>
 
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trend data <TrendingUp className="h-4 w-4" />
+      {/* Footer with trend information */}
+      {data.length > 0 && (
+        <div className="px-6 pb-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+            <div className="flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              <span>Response trends</span>
+            </div>
+            <span>{data.length} academic years</span>
+          </div>
         </div>
-        <div className="text-muted-foreground leading-none">
-          Filtered by selected program and year
-        </div>
-      </CardFooter>
+      )}
     </Card>
   );
 }

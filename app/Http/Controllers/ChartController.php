@@ -64,10 +64,8 @@ class ChartController extends Controller
         return match ($status) {
             'employed' => 'var(--chart-1)',
             'unemployed' => 'var(--chart-2)',
-            'self-employed' => 'var(--chart-3)',
-            'under-employed' => 'var(--chart-4)',
-            'currently-looking' => 'var(--chart-5)',
-            default => 'var(--chart-5)',
+            'not-tracked' => 'var(--chart-3)',
+            default => 'var(--chart-4)',
         };
     }
 }

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class SendController extends Controller
 {
-    // 📄 Display email form page
+    // Display email form page
     public function index()
     {
         return Inertia::render('send', [
@@ -19,52 +19,57 @@ class SendController extends Controller
         ]);
     }
 
-    // 📧 Send email to students (by program)
+    // Send email to selected students
     public function sendEmail(Request $request)
     {
         $request->validate([
-            'program' => 'required|string',
+            'emails' => 'required|array|min:1',
+            'emails.*' => 'required|email',
         ]);
 
-        $students = Student::where('program', $request->program)->get();
-
+        $emails = $request->emails;
         $sent = [];
         $failed = [];
 
-        foreach ($students as $student) {
-            $formUrl = url("/alumni-form/{$student->student_number}");
+        foreach ($emails as $email) {
+            $student = Student::where('email', $email)->first();
+
+            if (!$student) {
+                $failed[] = $email;
+                continue;
+            }
 
             try {
                 Mail::send('emails.alumni-form', [
                     'student' => $student,
-                    'formUrl' => $formUrl,
+                    'formUrl' => url("/alumni-form/{$student->student_number}")
                 ], function ($message) use ($student) {
                     $message->to($student->email)
                             ->subject('Fill Out Your DHVSU Alumni Tracer Form');
                 });
 
-                $sent[] = $student->email;
+                $sent[] = $email;
             } catch (\Exception $e) {
-                Log::error("Failed to send email to {$student->email}: " . $e->getMessage());
-                $failed[] = $student->email;
+                Log::error("Failed to send to {$student->email}: " . $e->getMessage());
+                $failed[] = $email;
             }
         }
 
         return response()->json([
-            'message' => 'Student emails processed.',
+            'message' => count($sent) . ' emails sent successfully.',
             'sent' => $sent,
             'failed' => $failed,
         ]);
     }
 
-    // ✅ Send email to alumni by program
+    // Send email to alumni by program
     public function sendToProgram(Request $request)
     {
         $request->validate([
             'program' => 'required|string',
         ]);
 
-        $alumni = Alumni::where('program', $request->program)
+        $alumniList = Alumni::where('program', $request->program)
             ->whereNotNull('email')
             ->where('email', '!=', '')
             ->where('consent', true)
@@ -73,13 +78,11 @@ class SendController extends Controller
         $sent = [];
         $failed = [];
 
-        foreach ($alumni as $alum) {
-            $formUrl = url("/alumni-form/{$alum->student_number}");
-
+        foreach ($alumniList as $alum) {
             try {
                 Mail::send('emails.alumni-form', [
                     'student' => $alum,
-                    'formUrl' => $formUrl,
+                    'formUrl' => url("/alumni-form/{$alum->student_number}")
                 ], function ($message) use ($alum) {
                     $message->to($alum->email)
                             ->subject('Fill Out Your DHVSU Alumni Tracer Form');
@@ -92,7 +95,7 @@ class SendController extends Controller
 
                 $sent[] = $alum->email;
             } catch (\Exception $e) {
-                Log::error("❌ Failed to send to {$alum->email}: " . $e->getMessage());
+                Log::error("Failed to send to {$alum->email}: " . $e->getMessage());
 
                 $alum->update([
                     'email_status' => 'failed',
@@ -109,54 +112,7 @@ class SendController extends Controller
         ]);
     }
 
-    // ✅ Send email to all alumni
-    public function sendToAllAlumni()
-    {
-        $alumniList = Alumni::where('consent', true)
-            ->whereNotNull('email')
-            ->where('email', '!=', '')
-            ->get();
-
-        $sent = [];
-        $failed = [];
-
-        foreach ($alumniList as $alumni) {
-            $formUrl = url("/alumni-form/{$alumni->student_number}");
-
-            try {
-                Mail::send('emails.alumni-form', [
-                    'student' => $alumni,
-                    'formUrl' => $formUrl,
-                ], function ($message) use ($alumni) {
-                    $message->to($alumni->email)
-                            ->subject('Fill Out Your DHVSU Alumni Tracer Form');
-                });
-
-                $alumni->update([
-                    'email_sent_at' => now(),
-                    'email_status' => 'sent',
-                ]);
-
-                $sent[] = $alumni->email;
-            } catch (\Exception $e) {
-                Log::error("❌ Failed to send to {$alumni->email}: " . $e->getMessage());
-
-                $alumni->update([
-                    'email_status' => 'failed',
-                ]);
-
-                $failed[] = $alumni->email;
-            }
-        }
-
-        return response()->json([
-            'message' => '✅ All alumni emails processed.',
-            'sent' => $sent,
-            'failed' => $failed,
-        ]);
-    }
-
-    // ✅ NEW: Update alumni info based on student_number (used by form)
+    // Update alumni info based on student_number
     public function updateAlumniForm(Request $request)
     {
         $validated = $request->validate([
@@ -164,7 +120,6 @@ class SendController extends Controller
             'email' => ['required', 'email'],
             'name' => ['required', 'string'],
             'program' => ['required', 'string'],
-            // 🔁 Add other fields here if needed
         ]);
 
         $alumni = Alumni::where('student_number', $validated['student_number'])->first();

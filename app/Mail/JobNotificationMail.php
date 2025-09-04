@@ -21,9 +21,11 @@ class JobNotificationMail extends Mailable
     }
 
     public function build()
-    {
-        return $this->subject("JOB AWAITS: {$this->job->title}")
-                    ->view('emails.job-notification')
-                    ->with(['job' => $this->job]);
-    }
+{
+    return $this->subject("New Job Opportunity: {$this->job->title} @ {$this->job->company_name}")
+                ->view('emails.job-notification')
+                ->with(['job' => $this->job]);
+
+}
+
 }

@@ -1,65 +1,58 @@
 "use client"
 
 import * as React from "react"
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select"
 import { toast } from "sonner"
 import axios from "axios"
-import { FormInputIcon, Share2Icon } from "lucide-react"
+import { SendIcon, Share2Icon, Loader2 } from "lucide-react"
 
-export function SendEmailToProgram() {
+type Student = {
+  id: number
+  student_number: string
+  student_name: string
+  email?: string
+}
+
+interface Props {
+  selectedStudents: Student[]
+}
+
+export function SendEmailToSelected({ selectedStudents }: Props) {
   const [open, setOpen] = React.useState(false)
-  const [selectedProgram, setSelectedProgram] = React.useState("")
-  const [programs, setPrograms] = React.useState<string[]>([])
-
-  // Fetch programs dynamically from API
-  React.useEffect(() => {
-    axios.get("/students/programs")
-      .then((res) => setPrograms(res.data))
-      .catch((err) => console.error("Failed to fetch programs", err))
-  }, [])
+  const [isSending, setIsSending] = React.useState(false)
 
   const handleSend = async () => {
-    if (!selectedProgram) {
-      toast.warning("Please select a program.")
+    // Filter only students with valid emails
+    const emails = selectedStudents.map(s => s.email).filter((e): e is string => Boolean(e))
+
+    if (!emails.length) {
+      toast.error("Selected students have no email addresses!")
       return
     }
 
+    if (!confirm(`Send email to ${emails.length} students?`)) return
+
+    setIsSending(true)
+    
     try {
-      const response = await axios.post("/send-email", { program: selectedProgram })
-      const { sent = [], failed = [] } = response.data
+      const response = await axios.post("/students/send-email", { emails })
+      const { sent, failed } = response.data
 
       if (failed.length > 0) {
-        const failedList = failed.map((f: any) => f.email).join(", ")
-        toast.warning("Some emails failed to send ❗", {
-          description: `Failed: ${failedList}`,
-        })
-      } else {
-        toast.success("Emails sent successfully! 📧", {
-          description: `Program: ${selectedProgram} (${sent.length} students)`,
-        })
+        toast.warning(`Some emails failed: ${failed.join(", ")}`)
+      }
+
+      if (sent.length > 0) {
+        toast.success(`Emails sent successfully! 📧 (${sent.length} students)`)
       }
 
       setOpen(false)
-      setSelectedProgram("")
     } catch (err: any) {
-      toast.error("Failed to send emails", {
-        description: err?.response?.data?.message || "Something went wrong.",
-      })
+      console.error(err)
+      toast.error(err?.response?.data?.message || "Failed to send emails")
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -70,48 +63,49 @@ export function SendEmailToProgram() {
   }
 
   return (
-    <div className="flex gap-2 flex-wrap">
-      {/* 🔗 Share Link */}
-      <Button variant="outline" onClick={handleShareLink}>
+    <div className="flex gap-2">
+      <Button onClick={handleShareLink}>
         <Share2Icon className="w-4 h-4 mr-2" />
         Share Link
       </Button>
 
-      {/* 📧 Send Email Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(isOpen) => {
+        if (isSending) return; // Prevent closing when loading
+        setOpen(isOpen);
+      }}>
         <DialogTrigger asChild>
           <Button variant="default">
-            <FormInputIcon className="w-4 h-4 mr-2" />
-            Send Email to Program
+            <SendIcon className="w-4 h-4 mr-2" />
+            Send Email to Selected
           </Button>
         </DialogTrigger>
+
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Select a Program</DialogTitle>
+            <DialogTitle>Send Email</DialogTitle>
           </DialogHeader>
 
-          <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choose a program..." />
-            </SelectTrigger>
-            <SelectContent>
-              {programs.length ? (
-                programs.map((prog) => (
-                  <SelectItem key={prog} value={prog}>
-                    {prog}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem disabled value="">
-                  No programs available
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+          <div className="py-4">
+            <p>Send email to {selectedStudents.length} selected students?</p>
+          </div>
 
           <DialogFooter className="flex justify-end gap-2">
-            <Button onClick={handleSend}>Send</Button>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
+            <Button 
+              onClick={handleSend} 
+              disabled={isSending}
+            >
+              {isSending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : "Send"}
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setOpen(false)} 
+              disabled={isSending}
+            >
               Cancel
             </Button>
           </DialogFooter>

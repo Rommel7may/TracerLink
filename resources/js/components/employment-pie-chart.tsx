@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell } from 'recharts';
+import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 
 import {
   Card,
@@ -11,12 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-} from '@/components/ui/chart';
 
 type ChartDataItem = {
   browser: string;
@@ -30,16 +24,22 @@ type Props = {
 };
 
 const chartConfig = {
-  employed: { label: 'Employed', color: '#fb7185' },          // rose-400
-  'under-employed': { label: 'Under-Employed', color: '#f43f5e' }, // rose-500
-  unemployed: { label: 'Unemployed', color: '#e11d48' },       // rose-600
-  'self-employed': { label: 'Self-Employed', color: '#be123c' },   // rose-700
-  'currently-looking': { label: 'Currently Looking', color: '#9f1239' }, // rose-800
-} satisfies ChartConfig;
+  employed: { 
+    label: 'Employed', 
+    color: 'hsl(152, 76%, 40%)'   // emerald-500 (#10b981)
+  },
+  unemployed: { 
+    label: 'Unemployed', 
+    color: 'hsl(0, 84%, 60%)'     // red-500 (#ef4444)
+  },
+  nottracked: { 
+    label: 'Not Tracked', 
+    color: 'hsl(220, 9%, 46%)'    // gray-500 (#6b7280)
+  },
+} satisfies Record<string, { label: string; color: string }>;
 
 export function ChartPieLegend({ programId, year }: Props) {
   const [chartData, setChartData] = useState<ChartDataItem[]>([]);
-  const [showLabels, setShowLabels] = useState(false);
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -50,12 +50,17 @@ export function ChartPieLegend({ programId, year }: Props) {
 
         const response = await axios.get('/alumni-chart', { params });
 
-        const dataWithColors = response.data.map((item: ChartDataItem) => ({
-          ...item,
-          fill:
-            chartConfig[item.browser as keyof typeof chartConfig]?.color ??
-            '#d1d5db', // gray-300 fallback
-        }));
+        const dataWithColors = response.data.map((item: ChartDataItem) => {
+          const key = item.browser.toLowerCase().replace(/\s+/g, ''); // normalize casing and remove spaces
+          type ChartConfigKey = keyof typeof chartConfig;
+          const isChartConfigKey = (k: string): k is ChartConfigKey =>
+            k === 'employed' || k === 'unemployed' || k === 'nottracked';
+          return {
+            ...item,
+            browser: item.browser === 'unknown' ? 'Not Tracked' : item.browser,
+            fill: isChartConfigKey(key) ? chartConfig[key].color : '#d1d5db',
+          };
+        });
 
         setChartData(dataWithColors);
       } catch (error) {
@@ -66,82 +71,137 @@ export function ChartPieLegend({ programId, year }: Props) {
     fetchChartData();
   }, [programId, year]);
 
-  const total = chartData.reduce((sum, item) => sum + item.visitors, 0);
-  const max = Math.max(...chartData.map((i) => i.visitors));
+  const total = chartData.reduce((sum, d) => sum + d.visitors, 0);
+  const maxValue = Math.max(...chartData.map((d) => d.visitors), 0);
+
+  // Enhanced legend renderer
+  const renderLegend = (props: any) => {
+    const { payload } = props;
+    
+    return (
+      <div className="mt-4 px-2">
+        <div className="grid grid-cols-1 gap-2">
+          {payload.map((entry: any, index: number) => {
+            const percent = total > 0 ? ((entry.payload.visitors / total) * 100).toFixed(1) : '0';
+            const isMaxValue = entry.payload.visitors === maxValue;
+            
+            return (
+              <div 
+                key={`legend-${index}`} 
+                className={`flex items-center justify-between p-2 rounded-lg ${
+                  isMaxValue ? 'bg-gray-100 font-medium' : ''
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-4 h-4 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-sm text-gray-700">
+                    {entry.value}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-gray-900">
+                    {entry.payload.visitors.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {percent}%
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {total > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700">Total Responses</span>
+              <span className="text-sm font-bold text-gray-900">{total.toLocaleString()}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <Card className="flex h-[450px] w-full flex-col rounded-2xl border bg-background text-foreground shadow-sm">
-      <CardHeader className="items-center pb-0">
-        <CardTitle className="text-lg font-semibold">Alumni Employment</CardTitle>
+    <Card className="h-full w-full rounded-xl border bg-background text-foreground shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold">Employment Status</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
-          Distribution of employment types
+          Distribution of alumni employment status
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-4">
-        {chartData.length > 0 ? (
-          <ChartContainer config={chartConfig} className="h-[300px] w-full capitalize">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="visitors"
-                  nameKey="browser"
-                  innerRadius={60}
-                  outerRadius={100}
-                  className='stroke-none'
-                  isAnimationActive
-                  onAnimationEnd={() => setShowLabels(true)}
-                  label={
-                    showLabels
-                      ? ({ name, percent }) =>
-                          percent !== undefined
-                            ? `${name} (${(percent * 100).toFixed(1)}%)`
-                            : ''
-                      : undefined
-                  }
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.fill}
-                      stroke={
-                        entry.visitors === max ? '#1f2937' : undefined
-                      }
-                      strokeWidth={entry.visitors === max ? 2 : 0}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => [`${value}`, 'Alumni']}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    color: '#111827',
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
-                  labelStyle={{ fontWeight: 600 }}
-                />
-                <ChartLegend
-                  content={
-                    <ChartLegendContent
-                      nameKey="browser"
-                      payload={chartData.map((item) => ({
-                        name: item.browser,
-                        value: `${item.visitors} ${
-                          item.visitors === max ? '🔥' : ''
-                        }`,
-                        color: item.fill,
-                      }))}
-                    />
-                  }
-                  className="mt-4 grid grid-cols-2 gap-x-2 gap-y-1 text-muted-foreground dark:text-slate-300 text-sm"
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+      <CardContent>
+        {chartData.length === 0 ? (
+          <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+            No employment data available
+          </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            No data available...
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+            {/* Pie Chart */}
+            <div className="w-full lg:w-1/2 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    dataKey="visitors"
+                    nameKey="browser"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    stroke='none'
+                    label={({ percent }) =>
+                      `${(percent * 100).toFixed(0)}%`
+                    }
+                    labelLine={false}
+                    isAnimationActive
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.fill || '#d1d5db'}
+                        stroke={entry.visitors === maxValue ? '#fff' : undefined}
+                        strokeWidth={entry.visitors === maxValue ? 2 : 0}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => [`${value}`, 'Alumni']}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      color: '#111827',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    }}
+                    labelFormatter={(name) => `Status: ${name}`}
+                    labelStyle={{ 
+                      fontWeight: 600,
+                      marginBottom: '4px'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* Legend */}
+            <div className="w-full lg:w-1/2">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-800 mb-3 text-center">
+                  Status Breakdown
+                </h4>
+                {renderLegend({ payload: chartData.map((item, index) => ({
+                  value: item.browser,
+                  color: item.fill,
+                  payload: item
+                })) })}
+              </div>
+            </div>
           </div>
         )}
       </CardContent>

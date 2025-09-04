@@ -9,7 +9,7 @@ class Alumni extends Model
     // 👇 Specify the correct table name
     protected $table = 'alumni';
 
-    // ✅ Define the fillable fields including the new 'instruction_rating'
+    // ✅ Define the fillable fields including the new fields
     protected $fillable = [
         'student_number',
         'email',
@@ -17,19 +17,21 @@ class Alumni extends Model
         'last_name',
         'given_name',
         'middle_initial',
+        'sex',
         'present_address',
         'active_email',
         'contact_number',
         'graduation_year',
         'employment_status',
         'company_name',
+        'work_position',          // ✅ Newly added field
         'further_studies',
         'sector',
         'work_location',
         'employer_classification',
         'related_to_course',
         'consent',
-        'instruction_rating', // ✅ New field added for 5-star rating
+        'instruction_rating',     // ✅ New field added for 5-star rating
     ];
 
     /**

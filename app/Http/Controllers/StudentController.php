@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-
 class StudentController extends Controller
 {
     /**
@@ -22,6 +21,14 @@ class StudentController extends Controller
         ]);
     }
 
+
+        public function getAllStudents()
+    {
+        $students = Student::all();
+
+        return $students;
+    }
+
     /**
      * Store a newly created student.
      */
@@ -31,7 +38,6 @@ class StudentController extends Controller
             'student_number' => 'required|string|unique:students',
             'student_name'   => 'required|string|max:255',
             'email' => 'required|email|unique:students',
-            // 'program' => 'required|string',
         ]);
 
         $student = Student::create($validated);
@@ -52,8 +58,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'student_number' => 'required|string|unique:students,student_number,' . $student->id,
             'student_name'   => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email,' . $student->id,
-            'program' => 'required|string',
+            'email' => 'email|unique:students,email,' . $student->id,
         ]);
 
         $student->update($validated);
@@ -74,8 +79,10 @@ class StudentController extends Controller
 public function import(Request $request)
 {
     $request->validate([
-        'file' => 'required|file|mimes:xlsx,xls',
+        'file' => 'required|file',
     ]);
+
+    // Student::truncate(); 
 
     $file = $request->file('file');
     $spreadsheet = IOFactory::load($file->getPathname());
@@ -84,34 +91,39 @@ public function import(Request $request)
 
     $inserted = 0;
 
-    foreach ($rows as $index => $row) {
-        // Skip header row
-        if ($index === 0) continue;
+    foreach ($rows as $row) {
+    $student_number = trim($row[0] ?? '');
+    $student_name   = trim($row[1] ?? '');
+    $email          = trim($row[2] ?? '');
+    $program        = trim($row[3] ?? '');
 
-        $student_number = $row[0] ?? null;
-        $student_name = $row[1] ?? null;
-        $email = $row[2] ?? null; // optional
-        $program = $row[3] ?? null; // optional
-
-        if (!$student_number || !$student_name) continue;
-
-        // Avoid duplicates
-        if (Student::where('student_number', $student_number)->exists()) continue;
-
-        Student::create([
-            'student_number' => $student_number,
-            'student_name' => $student_name,
-            'email' => $email,
-            'program' => $program,
-        ]);
-
-        $inserted++;
+    foreach ($row as $cell) {
+        $cell = trim($cell);
+        if (filter_var($cell, FILTER_VALIDATE_EMAIL)) {
+            $email = $cell;
+            break; // stop at first valid email
+        }
     }
 
-    return response()->json([
-        'message' => "$inserted students imported successfully!",
+    if (!$student_number || !$student_name) continue;
+
+    // Skip invalid rows: empty or non-numeric student number
+    if (!$student_number || !is_numeric($student_number) || !$student_name) continue;
+
+    // Avoid duplicates
+    if (Student::where('student_number', $student_number)->exists()) continue;
+
+    // Insert
+    Student::create([
+        'student_number' => $student_number,
+        'student_name'   => $student_name,
+        'email'          => $email ?: null,
+        'program'        => $program ?: null,
     ]);
+    }
+    return Inertia::render($inserted);
 }
+
 
 public function bulkDelete(Request $request)
 {

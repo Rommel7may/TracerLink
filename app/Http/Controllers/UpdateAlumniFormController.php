@@ -41,6 +41,7 @@ class UpdateAlumniFormController extends Controller
             'last_name' => 'required|string',
             'given_name' => 'required|string',
             'middle_initial' => 'nullable|string',
+            'sex' => ['required', Rule::in(['male', 'female'])], // ✅ Gender validation
             'present_address' => 'required|string',
             'active_email' => [
                 'required',
@@ -59,6 +60,7 @@ class UpdateAlumniFormController extends Controller
         if ($employmentStatus === 'employed') {
             $rules = array_merge($rules, [
                 'company_name' => 'required|string|max:255',
+                'work_position' => 'nullable|string|max:255', // ✅ Optional position
                 'sector' => 'required|string',
                 'work_location' => 'required|string',
                 'employer_classification' => 'required|string',
@@ -72,6 +74,7 @@ class UpdateAlumniFormController extends Controller
         if ($employmentStatus !== 'employed') {
             $validated = array_merge($validated, [
                 'company_name' => null,
+                'work_position' => null, // ✅ Clear work_position
                 'sector' => null,
                 'work_location' => null,
                 'employer_classification' => null,

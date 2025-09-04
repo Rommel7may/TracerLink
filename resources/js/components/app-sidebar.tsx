@@ -1,82 +1,110 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutDashboard, MailPlus, UsersIcon,ChartLine, Link2  } from 'lucide-react';
+import {
+  BookOpen,
+  Forward,
+  LayoutDashboard,
+  UsersIcon,
+  ChartLine,
+  Link2,
+  FormInputIcon,
+  FolderMinusIcon,
+} from 'lucide-react';
 import AppLogo from './app-logo';
+import AppearanceTabs from './appearance-tabs';
+import { Button } from './ui/button';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutDashboard,
-    },
-    {
-        title: 'Sending Email Form',
-        href: '/send',
-        icon: MailPlus,
-    },
-    {
-        title: 'Alumni List',
-        href: '/list',
-        icon: UsersIcon,
-    },
-    
-    {
-        title: 'Data Analytics',
-        href: '/data',
-        icon: ChartLine,
-    },
-     {
-        title: 'Send Job Email',
-        href: '/jobpost',
-        icon: Link2,
-    },
-    {
-        title: 'program',
-        href: '/program',
-        icon: BookOpen,
-    },
+//top
+const primaryNavItems: NavItem[] = [
+  {
+    title: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    title: 'Alumni List',
+    href: '/list',
+    icon: UsersIcon,
+  },
+  {
+    title: 'Analytics',
+    href: '/data',
+    icon: ChartLine,
+  },
+  {
+    title: 'Employability Report',
+    href: '/employability',
+    icon: BookOpen,
+  },
+ 
+];
+
+//bot
+const secondaryNavItems: NavItem[] = [
+  {
+    title: 'Email Alumni Form',
+    href: '/send',
+    icon: Forward,
+  },
+  {
+    title: 'Email Job Opportunity',
+    href: '/jobpost',
+    icon: Forward,
+  },
+   {
+    title: 'Test Form',
+    href: '/test',
+    icon: FolderMinusIcon,
+  },
+  
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
+ 
 ];
 
 export function AppSidebar() {
-    return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
-                                <AppLogo/>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
+  return (
+    <Sidebar collapsible="icon" variant="inset">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/dashboard" prefetch>
+                <AppLogo />
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
-            </SidebarContent>
+      <SidebarContent>
+        {/* Group 1 */}
+        <SidebarGroupLabel>Overview</SidebarGroupLabel>
+        <NavMain items={primaryNavItems} />
+        {/* Group 2 */}
+         <SidebarGroupLabel>Mailing job & form</SidebarGroupLabel>
+        <NavMain items={secondaryNavItems} />
+      </SidebarContent>
 
-            <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
-                <NavUser />
-            </SidebarFooter>
-        </Sidebar>
-    );
+      <SidebarFooter>
+        <NavFooter items={footerNavItems} className="mt-auto" />
+        <SidebarGroupLabel>Manage account and other settings.</SidebarGroupLabel>
+        <NavUser />
+      </SidebarFooter>
+    </Sidebar>
+  );
 }

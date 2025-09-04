@@ -31,10 +31,10 @@ type Props = {
 
 // 🎨 Color palette for course relevance (warm hues)
 const COLORS: Record<string, string> = {
-  yes: '#facc15',     // yellow-400
-  no: '#f97316',      // orange-500
-  unsure: '#ea580c',  // orange-600
-  unknown: '#78350f', // deep orange-900
+  yes: '#10b981',     // emerald-500 (green)
+  no: '#ef4444',      // red-500 (red)
+  unsure: '#f59e0b',  // amber-500 (orange)
+  unknown: '#6b7280', // gray-500 (gray)
 };
 
 export default function RelatedChart({ programId, year }: Props) {
@@ -50,7 +50,7 @@ export default function RelatedChart({ programId, year }: Props) {
         const res = await axios.get('/related', { params });
 
         const incoming: ChartItem[] = res.data.map((item: any) => ({
-          browser: item.browser,
+          browser: item.browser === 'unknown' ? 'Not specified' : item.browser,
           visitors: item.visitors,
           fill:
             COLORS[item.browser?.toLowerCase() as keyof typeof COLORS] ??
@@ -66,76 +66,137 @@ export default function RelatedChart({ programId, year }: Props) {
     fetchData();
   }, [programId, year]);
 
+  const total = data.reduce((sum, d) => sum + d.visitors, 0);
+  const maxValue = Math.max(...data.map((d) => d.visitors), 0);
+
   const renderLegend = (props: any) => {
     const { payload } = props;
+    
     return (
-      <ul className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 capitalize text-muted-foreground dark:text-slate-300">
-        {payload.map((entry: any, index: number) => (
-          <li
-            key={`item-${index}`}
-            className="flex items-center gap-2 text-sm font-medium"
-          >
-            <span
-              className="inline-block h-3 w-3 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            {entry.value}
-          </li>
-        ))}
-      </ul>
+      <div className="mt-4 px-2">
+        <div className="grid grid-cols-1 gap-2">
+          {payload.map((entry: any, index: number) => {
+            const percent = total > 0 ? ((entry.payload.visitors / total) * 100).toFixed(1) : '0';
+            const isMaxValue = entry.payload.visitors === maxValue;
+            
+            return (
+              <div 
+                key={`legend-${index}`} 
+                className={`flex items-center justify-between p-2 rounded-lg ${
+                  isMaxValue ? 'bg-gray-100 font-medium' : ''
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-4 h-4 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-sm text-gray-700 capitalize">
+                    {entry.value}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-gray-900">
+                    {entry.payload.visitors.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {percent}%
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {total > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700">Total Responses</span>
+              <span className="text-sm font-bold text-gray-900">{total.toLocaleString()}</span>
+            </div>
+          </div>
+        )}
+      </div>
     );
   };
 
   return (
-    <Card className="h-full w-full rounded-2xl border bg-background text-foreground shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold tracking-tight">
-          Course Relevance
-        </CardTitle>
+    <Card className="h-full w-full rounded-xl border bg-background text-foreground shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold">Course Relevance</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
           Are alumni working in jobs related to their degree?
         </CardDescription>
       </CardHeader>
-
-      <CardContent className="h-[300px] flex items-center justify-center">
+      <CardContent>
         {data.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No data available</div>
+          <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+            No relevance data available
+          </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="visitors"
-                nameKey="browser"
-                cx="50%"
-                cy="50%"
-                innerRadius={60} // 🎯 donut effect
-                outerRadius={100}
-                label={({ name, percent }) =>
-                  `${name} (${((percent ?? 0) * 100).toFixed(1)}%)`
-                }
-                isAnimationActive
-                className="capitalize"
-              >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  color: '#1f2937',
-                  borderRadius: 8,
-                  stroke: 'none',
-                  fontSize: 13,
-                  border: '1px solid #e5e7eb',
-                }}
-                wrapperStyle={{ color: '#1f2937' }}
-                labelStyle={{ fontWeight: 600 }}
-              />
-              <Legend content={renderLegend} verticalAlign="bottom" height={36} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+            {/* Pie Chart */}
+            <div className="w-full lg:w-1/2 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={data}
+                    dataKey="visitors"
+                    nameKey="browser"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    stroke='none'
+                    label={({ percent }) =>
+                      `${(percent * 100).toFixed(0)}%`
+                    }
+                    labelLine={false}
+                    isAnimationActive
+                  >
+                    {data.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.fill}
+                        stroke={entry.visitors === maxValue ? '#fff' : undefined}
+                        strokeWidth={entry.visitors === maxValue ? 2 : 0}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => [`${value}`, 'Alumni']}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      color: '#111827',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    }}
+                    labelFormatter={(name) => `Relevance: ${name}`}
+                    labelStyle={{ 
+                      fontWeight: 600,
+                      marginBottom: '4px'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* Legend */}
+            <div className="w-full lg:w-1/2">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-800 mb-3 text-center">
+                  Response Breakdown
+                </h4>
+                {renderLegend({ payload: data.map((item, index) => ({
+                  value: item.browser,
+                  color: item.fill,
+                  payload: item
+                })) })}
+              </div>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

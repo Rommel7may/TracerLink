@@ -20,7 +20,11 @@ use App\Http\Controllers\{
     ProgramController,
     DashboardController,
     PursuingStudiesController,
-    TotalGraduatesController
+    TotalGraduatesController,
+    AlumniImportController,
+    GenderChartController,
+    EmployabilityController, 
+    TestController,
 };
 
 // 🌐 Public Welcome Page
@@ -53,6 +57,9 @@ Route::get('/export-alumni', [AlumniExportController::class, 'export'])->name('a
 // 📈 New Analytics Charts
 Route::get('/chart/pursuing-studies', [PursuingStudiesController::class, 'chart'])->name('chart.pursuing.studies');
 Route::get('/chart/total-graduates', [TotalGraduatesController::class, 'total'])->name('chart.total.graduates');
+
+// 👨‍👩‍👧 Gender Chart (FIXED ✅)
+Route::get('/chart/gender', [GenderChartController::class, 'genderData'])->name('chart.gender');
 
 // 🧪 Test Email Blade Preview
 Route::get('/test-email-view', fn () => view('emails.AlumniUpdateForm', [
@@ -99,11 +106,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('/data', DataController::class);
     Route::resource('/jobpost', JobPostController::class);
     Route::resource('/program', ProgramController::class);
+    Route::resource('/test', TestController::class);
+
+    // 👈 Employability Route ✅
+    Route::get('/employability', [EmployabilityController::class, 'index'])->name('employability.index');
 
     // 🧠 API for Frontend Fetching
     Route::get('/alumni-form', [ProgramController::class, 'create']);
     Route::get('/alumni/create', [AlumniController::class, 'create']);
     Route::get('/api/programs', fn () => \App\Models\Program::all());
+
+    // ✅ Import Alumni (main + alias para sa React)
+    Route::post('/alumni/import', [AlumniImportController::class, 'import'])->name('alumni.import');
+    Route::post('/import-alumni', [AlumniImportController::class, 'import'])->name('alumni.import.alias');
 });
 
 // 📍 Job Posts
@@ -117,9 +132,81 @@ Route::post('/job-posts/send-email', [JobPostController::class, 'sendEmail'])->n
 
 // ✅ Send email to all employed alumni (NEW)
 Route::post('/job-posts/send-email-to-all-employed', [JobPostController::class, 'sendEmailToAllEmployed'])->name('job-posts.send-email-to-all-employed');
+
+// ✅ Bulk delete students
 Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete']);
 
-Route::post('/students/import', [StudentController::class, 'import']);
+// ✅ Import students from Excel
+Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
+
+// ✅ Send email to selected students
+Route::post('/students/send-email', [SendController::class, 'sendEmail'])->name('students.send-email');
+Route::post('/alumni/bulk-delete', [AlumniController::class, 'bulkDelete'])->name('alumni.bulk-delete');
+
+
+// ⚙️ Program setting page
+Route::get('/settings/program', function () {
+    $programs = \App\Models\Program::all();
+    return Inertia::render('settings/ProgramCrud', [
+        'programs' => $programs,
+    ]);
+});
+
+Route::get('/test-realtime', function() {
+    event(new \App\Events\TestRealtime('Hello from Laravel!'));
+    return 'Event fired!';
+});
+Route::post('/alumni', [AlumniController::class, 'store']);
+
+
+// routes/web.php or routes/api.php
+Route::get('/test-broadcast', function () {
+    $alumni = App\Models\Alumni::first(); // Get any alumni
+    event(new App\Events\AlumniCreated($alumni));
+    return 'Event broadcasted!';
+});
+
+Route::get('/api/programs', function() {
+    return response()->json(\App\Models\Program::all());
+});
+// Route::get('/test-broadcast-debug', function () {
+//     $alumni = App\Models\Alumni::first();
+    
+//     \Log::info('=== START BROADCAST DEBUG ===');
+//     \Log::info('Testing broadcast for alumni: ' . $alumni->id);
+    
+//     // Test if broadcasting is configured
+//     $broadcastManager = app('Illuminate\Broadcasting\BroadcastManager');
+//     $driver = $broadcastManager->getDefaultDriver();
+//     \Log::info('Default broadcast driver: ' . $driver);
+    
+//     // Test the event
+//     $event = new App\Events\AlumniCreated($alumni);
+//     \Log::info('Event channel: ' . $event->broadcastOn()->name);
+//     \Log::info('Event name: ' . $event->broadcastAs());
+//     \Log::info('Event data: ' . json_encode($event->broadcastWith()));
+    
+//     // Test broadcasting
+//     try {
+//         \Log::info('Attempting to broadcast...');
+//         broadcast($event)->toOthers();
+//         \Log::info('Broadcast completed without errors');
+//     } catch (\Exception $e) {
+//         \Log::error('Broadcast error: ' . $e->getMessage());
+//     }
+    
+//     \Log::info('=== END BROADCAST DEBUG ===');
+    
+//     return response()->json([
+//         'status' => 'debug_completed',
+//         'alumni' => $alumni->student_number,
+//         'driver' => $driver
+//     ]);
+// });
+
+Route::get('/programs', function () {
+    return Program::select('id', 'name')->orderBy('name')->get();
+});
 
 // 🧩 Include extra route files
 require __DIR__ . '/settings.php';
