@@ -106,6 +106,13 @@ export function AlumniTable() {
   const [pageSize, setPageSize] = React.useState(10);
   const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>('');
+  
+  // Loading states for all actions
+  const [deleteLoading, setDeleteLoading] = React.useState<number | null>(null);
+  const [bulkDeleteLoading, setBulkDeleteLoading] = React.useState(false);
+  const [sendEmailLoading, setSendEmailLoading] = React.useState(false);
+  const [importLoading, setImportLoading] = React.useState(false);
+  const [exportLoading, setExportLoading] = React.useState(false);
 
   const currentYear = new Date().getFullYear();
   const graduationYears = React.useMemo(() => {
@@ -116,24 +123,21 @@ export function AlumniTable() {
     return years;
   }, [currentYear]);
 
-const fetchAlumni = () => {
-  console.log('🔄 fetchAlumni() called');
-  setLoading(true);
-  axios
-    .get('/alumni-data')  // Use web route (no /api/ prefix)
-    .then((response) => {
-      console.log('✅ Alumni data fetched:', response.data.length, 'items');
-      
-      // Force a new array reference to ensure React detects the change
-      setAlumniData([...response.data]);
-      
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error('❌ Error fetching alumni data:', error);
-      setLoading(false);
-    });
-};
+  const fetchAlumni = () => {
+    console.log('🔄 fetchAlumni() called');
+    setLoading(true);
+    axios
+      .get('/alumni-data')
+      .then((response) => {
+        console.log('✅ Alumni data fetched:', response.data.length, 'items');
+        setAlumniData([...response.data]);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('❌ Error fetching alumni data:', error);
+        setLoading(false);
+      });
+  };
 
   const fetchPrograms = () => {
     axios.get('/api/programs')
@@ -143,8 +147,9 @@ const fetchAlumni = () => {
 
   const handleDelete = (id?: number) => {
     if (!id) return;
-    if (!confirm('Are you sure you want to delete this record?')) return;
-
+    
+    setDeleteLoading(id);
+    
     axios
       .delete(`/alumni/${id}`)
       .then(() => {
@@ -154,6 +159,9 @@ const fetchAlumni = () => {
       .catch((err) => {
         console.error('Delete failed:', err);
         toast.error('Delete failed.');
+      })
+      .finally(() => {
+        setDeleteLoading(null);
       });
   };
 
@@ -168,7 +176,7 @@ const fetchAlumni = () => {
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} record(s)?`)) return;
+    setBulkDeleteLoading(true);
 
     try {
       await axios.post('/alumni/bulk-delete', { ids: selectedIds });
@@ -179,29 +187,46 @@ const fetchAlumni = () => {
     } catch (err) {
       console.error('Bulk delete failed:', err);
       toast.error('Bulk delete failed.');
+    } finally {
+      setBulkDeleteLoading(false);
     }
   };
 
   const handleSendEmails = async () => {
+    const selectedIds = Object.keys(rowSelection)
+      .filter((key) => rowSelection[key as keyof typeof rowSelection])
+      .map((key) => alumniData[parseInt(key)].id)
+      .filter((id): id is number => id !== undefined);
+
+    if (selectedIds.length === 0) {
+      toast.error("No alumni selected ❌");
+      return;
+    }
+
+    setSendEmailLoading(true);
+
     try {
-      const response = await axios.post('/send-email-to-all-alumni');
+      const response = await axios.post("/send-email-to-selected-alumni", { ids: selectedIds });
       const { sent, failed } = response.data;
 
       if (failed?.length) {
-        const failedList = failed.map((f: any) => f.email).join(', ');
-        toast.warning('Some emails failed to send ❗', {
-          description: `Failed: ${failedList}`,
+        toast.warning("Some emails failed ❗", {
+          description: failed.join(", "),
         });
       } else {
-        toast.success('Emails sent successfully to all alumni! 📧', {
+        toast.success(`Emails sent successfully 📧`, {
           description: `Total sent: ${sent.length}`,
         });
       }
 
       setSendEmailOpen(false);
+      setRowSelection({});
     } catch (err: any) {
-      const fallback = err?.response?.data?.message || 'Something went wrong.';
-      toast.error('Failed to send emails', { description: fallback });
+      toast.error("Failed to send emails", {
+        description: err?.response?.data?.message || "Something went wrong.",
+      });
+    } finally {
+      setSendEmailLoading(false);
     }
   };
 
@@ -211,6 +236,7 @@ const fetchAlumni = () => {
       return;
     }
 
+    setImportLoading(true);
     const formData = new FormData();
     formData.append('file', importFile);
 
@@ -227,6 +253,8 @@ const fetchAlumni = () => {
       toast.error('Import failed ❌', {
         description: err?.response?.data?.message || 'Something went wrong.',
       });
+    } finally {
+      setImportLoading(false);
     }
   };
 
@@ -235,79 +263,78 @@ const fetchAlumni = () => {
     fetchPrograms();
   }, []);
 
+  // WebSocket connection for real-time updates
+  React.useEffect(() => {
+    console.log('🔌 Connecting to Reverb WebSocket for alumni updates...');
 
-// WebSocket connection for real-time updates - FINAL VERSION
-React.useEffect(() => {
-  console.log('🔌 Connecting to Reverb WebSocket for alumni updates...');
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      console.log('Skipping WebSocket on server side');
+      return;
+    }
+    
+    if (!echo) {
+      console.error('❌ Echo instance is not available');
+      return;
+    }
 
-  // Only run on client side
-  if (typeof window === 'undefined') {
-    console.log('Skipping WebSocket on server side');
-    return;
-  }
-  
-  if (!echo) {
-    console.error('❌ Echo instance is not available');
-    return;
-  }
+    console.log('✅ Echo instance found');
 
-  console.log('✅ Echo instance found');
+    // Add connection event listeners for debugging
+    const connector = echo.connector as any;
+    
+    if (connector.pusher && connector.pusher.connection) {
+      connector.pusher.connection.bind('connected', () => {
+        console.log('✅ WebSocket connected successfully!');
+      });
 
-  // Add connection event listeners for debugging
-  const connector = echo.connector as any;
-  
-  if (connector.pusher && connector.pusher.connection) {
-    connector.pusher.connection.bind('connected', () => {
-      console.log('✅ WebSocket connected successfully!');
-    });
+      connector.pusher.connection.bind('error', (error: any) => {
+        console.error('❌ WebSocket connection error:', error);
+      });
+    }
 
-    connector.pusher.connection.bind('error', (error: any) => {
-      console.error('❌ WebSocket connection error:', error);
-    });
-  }
-
-  // Add a small delay to ensure everything is loaded
-  const connectionTimeout = setTimeout(() => {
-    try {
-      console.log('📡 Creating WebSocket channel...');
-      
-      // Subscribe to the alumni channel
-      const channel = echo.channel('alumni');
-      
-      console.log('✅ Channel created');
-
-      const listener = (e: any) => {
-        console.log('🎉 AlumniCreated event received:', e);
+    // Add a small delay to ensure everything is loaded
+    const connectionTimeout = setTimeout(() => {
+      try {
+        console.log('📡 Creating WebSocket channel...');
         
-        // SIMPLE & RELIABLE: Refresh the data from server
-        fetchAlumni();
+        // Subscribe to the alumni channel
+        const channel = echo.channel('alumni');
+        
+        console.log('✅ Channel created');
 
-        toast.success(`${e.given_name} ${e.last_name} submitted form!`);
-      };
+        const listener = (e: any) => {
+          console.log('🎉 AlumniCreated event received:', e);
+          
+          // Refresh the data from server
+          fetchAlumni();
 
-      // Listen for the event
-      channel.listen('.AlumniCreated', listener);
-      
-      console.log('✅ Successfully subscribed to alumni channel');
+          toast.success(`${e.given_name} ${e.last_name} submitted form!`);
+        };
 
-    } catch (error) {
-      console.error('❌ Error setting up WebSocket connection:', error);
-    }
-  }, 1000); // 1 second delay
+        // Listen for the event
+        channel.listen('.AlumniCreated', listener);
+        
+        console.log('✅ Successfully subscribed to alumni channel');
 
-  // Cleanup function
-  return () => {
-    clearTimeout(connectionTimeout);
-    try {
-      if (echo) {
-        echo.leaveChannel('alumni');
-        console.log('👋 Left alumni channel');
+      } catch (error) {
+        console.error('❌ Error setting up WebSocket connection:', error);
       }
-    } catch (error) {
-      console.error('❌ Error leaving channel:', error);
-    }
-  };
-}, []); // Empty dependency array
+    }, 1000); // 1 second delay
+
+    // Cleanup function
+    return () => {
+      clearTimeout(connectionTimeout);
+      try {
+        if (echo) {
+          echo.leaveChannel('alumni');
+          console.log('👋 Left alumni channel');
+        }
+      } catch (error) {
+        console.error('❌ Error leaving channel:', error);
+      }
+    };
+  }, []); // Empty dependency array
 
   const columns: ColumnDef<Alumni>[] = [
     {
@@ -376,13 +403,6 @@ React.useEffect(() => {
     { accessorKey: 'further_studies', header: 'Further Studies', cell: ({ getValue }) => getValue() || 'N/A' },
     { accessorKey: 'work_location', header: 'Work Location', cell: ({ getValue }) => getValue() || 'N/A' },
     { accessorKey: 'employer_classification', header: 'Employer Type', cell: ({ getValue }) => getValue() || 'N/A' },
-    // {
-    //   accessorKey: 'consent',
-    //   header: 'Consent',
-    //   cell: ({ row }) => (
-    //     <div>{row.getValue('consent') ? 'Yes' : 'No'}</div>
-    //   ),
-    // },
     {
       id: 'actions',
       header: 'Actions',
@@ -408,8 +428,9 @@ React.useEffect(() => {
               <DropdownMenuItem
                 className="text-red-600"
                 onClick={() => handleDelete(alumni.id)}
+                disabled={deleteLoading === alumni.id}
               >
-                Delete
+                {deleteLoading === alumni.id ? 'Deleting...' : 'Delete'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -445,6 +466,8 @@ React.useEffect(() => {
   });
 
   const handleExport = async () => {
+    setExportLoading(true);
+    
     try {
       const response = await axios.get('/export-alumni', {
         responseType: 'blob',
@@ -467,6 +490,8 @@ React.useEffect(() => {
       toast.error('Export failed ❌', {
         description: error?.response?.data?.message || 'Something went wrong.',
       });
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -631,8 +656,8 @@ React.useEffect(() => {
                   size="sm"
                   onClick={() => setBulkDeleteOpen(true)}
                 >
-                  <Trash2Icon className="mr-2 h-4 w-4" />
-                  Delete Selected
+                  <Trash2Icon className=" h-4 " />
+                  Delete
                 </Button>
               </div>
             )}
@@ -643,23 +668,35 @@ React.useEffect(() => {
             {/* Send Email */}
             <Dialog open={sendEmailOpen} onOpenChange={setSendEmailOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="flex items-center">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center"
+                  disabled={selectedCount === 0}
+                >
                   <UsersRound className="mr-2 h-4 w-4" />
                   Send Email
                 </Button>
               </DialogTrigger>
+
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Send to All Alumni</DialogTitle>
+                  <DialogTitle>Send Email to Selected Alumni</DialogTitle>
                   <DialogDescription>
-                    This will send email to <b>all alumni with consent and email</b>.
+                    This will send email to <b>{selectedCount}</b> selected alumni.
                   </DialogDescription>
                 </DialogHeader>
+
                 <DialogFooter className="pt-4">
-                  <Button onClick={handleSendEmails}>Send Now</Button>
+                  <Button 
+                    onClick={handleSendEmails}
+                    disabled={sendEmailLoading}
+                  >
+                    {sendEmailLoading ? 'Sending...' : 'Send Now'}
+                  </Button>
                   <Button
                     variant="ghost"
                     onClick={() => setSendEmailOpen(false)}
+                    disabled={sendEmailLoading}
                   >
                     Cancel
                   </Button>
@@ -668,9 +705,13 @@ React.useEffect(() => {
             </Dialog>
 
             {/* Export */}
-            <Button variant="outline" onClick={handleExport}>
+            <Button 
+              variant="outline" 
+              onClick={handleExport}
+              disabled={exportLoading}
+            >
               <DownloadIcon className="mr-2 h-4 w-4" />
-              Export
+              {exportLoading ? 'Exporting...' : 'Export'}
             </Button>
 
             {/* Rows per page */}
@@ -706,10 +747,18 @@ React.useEffect(() => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="destructive" onClick={handleBulkDelete}>
-              Delete {selectedCount} record(s)
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteLoading}
+            >
+              {bulkDeleteLoading ? 'Deleting...' : `Delete ${selectedCount} record(s)`}
             </Button>
-            <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setBulkDeleteOpen(false)}
+              disabled={bulkDeleteLoading}
+            >
               Cancel
             </Button>
           </DialogFooter>
@@ -788,12 +837,16 @@ React.useEffect(() => {
             }
           />
           <DialogFooter>
-            <Button onClick={handleImport} disabled={!importFile}>
-              Upload
+            <Button 
+              onClick={handleImport} 
+              disabled={!importFile || importLoading}
+            >
+              {importLoading ? 'Uploading...' : 'Upload'}
             </Button>
             <Button
               variant="ghost"
               onClick={() => setImportOpen(false)}
+              disabled={importLoading}
             >
               Cancel
             </Button>
@@ -813,7 +866,7 @@ React.useEffect(() => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="font-semibold text-gray-900">
                       {header.isPlaceholder
                         ? null
                         : flexRender(

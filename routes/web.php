@@ -84,6 +84,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/send-email', [SendController::class, 'sendEmail'])->name('email.send');
     Route::post('/send-email-to-alumni', [SendController::class, 'sendToProgram'])->name('email.to.program');
     Route::post('/send-email-to-all-alumni', [UpdateEmailController::class, 'sendToAll'])->name('email.to.all.alumni');
+    Route::post('/send-email-to-selected-alumni', [UpdateEmailController::class, 'sendToSelected']);
 
     // 👨‍🎓 Alumni CRUD
     Route::get('/alumni-data', [AlumniController::class, 'index'])->name('alumni.index');

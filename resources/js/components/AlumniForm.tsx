@@ -102,8 +102,9 @@ export const AlumniForm = memo(function AlumniForm({
 
     const { data, setData, post, put, processing, reset, errors } = useForm({
         id: id || undefined,
-        student_number: student_number || '',
-        email: email || '',
+        student_number: isEditing ? (student_number || '') : '',
+
+        email: isEditing ? (email || '') : '',
         program_id: program_id ? String(program_id) : '',
         last_name: last_name || '',
         given_name: given_name || '',
@@ -330,14 +331,15 @@ export const AlumniForm = memo(function AlumniForm({
                             <h3 className="border-b pb-2 text-xl font-semibold text-foreground">Basic Information</h3>
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <FieldWrapper label="Student Number" required error={errors.student_number}>
-                                    <Input
-                                        className={`h-11 ${errors.student_number ? 'border-red-500' : ''}`}
-                                        value={data.student_number}
-                                        onChange={handleInputChange('student_number')}
-                                        disabled={processing} // Disable when editing
-                                        placeholder="e.g., 2020-12345"
-                                    />
-                                </FieldWrapper>
+    <Input
+        className={`h-11 ${errors.student_number ? 'border-red-500' : ''}`}
+        value={data.student_number}
+        onChange={handleInputChange('student_number')}
+        disabled={processing || isEditing} // ✅ disable kapag edit mode
+        placeholder="e.g., 2020-12345"
+    />
+</FieldWrapper>
+
 
                                 <FieldWrapper label="Email" required error={errors.email}>
                                     <Input

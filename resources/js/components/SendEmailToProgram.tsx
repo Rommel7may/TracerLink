@@ -5,7 +5,8 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import axios from "axios"
-import { SendIcon, Share2Icon, Loader2 } from "lucide-react"
+import { FileInput, Share2Icon, Loader2, ListIcon } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 type Student = {
   id: number
@@ -16,9 +17,10 @@ type Student = {
 
 interface Props {
   selectedStudents: Student[]
+  disabled?: boolean
 }
 
-export function SendEmailToSelected({ selectedStudents }: Props) {
+export function SendEmailToSelected({ selectedStudents, disabled = false }: Props) {
   const [open, setOpen] = React.useState(false)
   const [isSending, setIsSending] = React.useState(false)
 
@@ -31,7 +33,7 @@ export function SendEmailToSelected({ selectedStudents }: Props) {
       return
     }
 
-    if (!confirm(`Send email to ${emails.length} students?`)) return
+    // if (!confirm(`Send email to ${emails.length} students?`)) return
 
     setIsSending(true)
     
@@ -73,12 +75,32 @@ export function SendEmailToSelected({ selectedStudents }: Props) {
         if (isSending) return; // Prevent closing when loading
         setOpen(isOpen);
       }}>
-        <DialogTrigger asChild>
-          <Button variant="default">
-            <SendIcon className="w-4 h-4 mr-2" />
-            Send Email to Selected
-          </Button>
-        </DialogTrigger>
+        <Tooltip>
+  <TooltipTrigger asChild>
+    <div> {/* Wrap the button in a div for tooltip to work on disabled elements */}
+      <DialogTrigger asChild>
+        <Button 
+          variant="default" 
+          disabled={disabled || selectedStudents.length === 0}
+        >
+          <FileInput className="w-4 h-4 mr-2" />
+          Send Form
+        </Button>
+      </DialogTrigger>
+    </div>
+  </TooltipTrigger>
+  <TooltipContent>
+    <p>
+      {disabled 
+        ? ""
+         
+        : selectedStudents.length === 0 
+          ? "Please select at least one student" 
+          : "Send form to selected students"
+      }
+    </p>
+  </TooltipContent>
+</Tooltip>
 
         <DialogContent>
           <DialogHeader>
@@ -86,13 +108,16 @@ export function SendEmailToSelected({ selectedStudents }: Props) {
           </DialogHeader>
 
           <div className="py-4">
-            <p>Send email to {selectedStudents.length} selected students?</p>
+            <p>Send email form to {selectedStudents.length} selected students?</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {selectedStudents.filter(s => s.email).length} students have valid email addresses
+            </p>
           </div>
 
           <DialogFooter className="flex justify-end gap-2">
             <Button 
               onClick={handleSend} 
-              disabled={isSending}
+              disabled={isSending || selectedStudents.filter(s => s.email).length === 0}
             >
               {isSending ? (
                 <>

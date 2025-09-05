@@ -203,4 +203,5 @@ class AlumniController extends Controller
 
         return response()->json(['message' => '🗑️ Alumni deleted successfully.']);
     }
+    
 }
