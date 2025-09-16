@@ -28,10 +28,10 @@ use App\Http\Controllers\{
 };
 
 // 🌐 Public Welcome Page
-// Route::get('/', fn () => Inertia::render('welcome'))->name('home');
-Route::get('/', function(){
-    return redirect()->route('login');
-})->name('home');
+Route::get('/', fn () => Inertia::render('welcome'))->name('home');
+// Route::get('/', function(){
+//     return redirect()->route('login');
+// })->name('home');
 
 //hehehe
 
