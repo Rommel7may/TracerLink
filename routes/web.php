@@ -28,7 +28,11 @@ use App\Http\Controllers\{
 };
 
 // 🌐 Public Welcome Page
-Route::get('/', fn () => Inertia::render('welcome'))->name('home');
+// Route::get('/', fn () => Inertia::render('welcome'))->name('home');
+Route::get('/', function(){
+    return redirect()->route('login');
+})->name('home');
+
 
 // 📝 Public Alumni Form
 Route::get('/alumni-form/{student_number}', [AlumniFormController::class, 'show'])->name('alumni.form');
@@ -52,7 +56,7 @@ Route::get('/alumni-chart', [ChartController::class, 'alumniPie'])->name('alumni
 Route::get('/alumni-chart-options', [ChartController::class, 'options'])->name('alumni.chart.options');
 Route::get('/related', [YesNoController::class, 'YesNo'])->name('related.chart');
 Route::get('/location', [LocationController::class, 'location'])->name('location.chart');
-Route::get('/export-alumni', [AlumniExportController::class, 'export'])->name('alumni.export');
+Route::post('/export-alumni', [AlumniExportController::class, 'export'])->name('alumni.export');
 
 // 📈 New Analytics Charts
 Route::get('/chart/pursuing-studies', [PursuingStudiesController::class, 'chart'])->name('chart.pursuing.studies');
@@ -170,40 +174,6 @@ Route::get('/test-broadcast', function () {
 Route::get('/api/programs', function() {
     return response()->json(\App\Models\Program::all());
 });
-// Route::get('/test-broadcast-debug', function () {
-//     $alumni = App\Models\Alumni::first();
-    
-//     \Log::info('=== START BROADCAST DEBUG ===');
-//     \Log::info('Testing broadcast for alumni: ' . $alumni->id);
-    
-//     // Test if broadcasting is configured
-//     $broadcastManager = app('Illuminate\Broadcasting\BroadcastManager');
-//     $driver = $broadcastManager->getDefaultDriver();
-//     \Log::info('Default broadcast driver: ' . $driver);
-    
-//     // Test the event
-//     $event = new App\Events\AlumniCreated($alumni);
-//     \Log::info('Event channel: ' . $event->broadcastOn()->name);
-//     \Log::info('Event name: ' . $event->broadcastAs());
-//     \Log::info('Event data: ' . json_encode($event->broadcastWith()));
-    
-//     // Test broadcasting
-//     try {
-//         \Log::info('Attempting to broadcast...');
-//         broadcast($event)->toOthers();
-//         \Log::info('Broadcast completed without errors');
-//     } catch (\Exception $e) {
-//         \Log::error('Broadcast error: ' . $e->getMessage());
-//     }
-    
-//     \Log::info('=== END BROADCAST DEBUG ===');
-    
-//     return response()->json([
-//         'status' => 'debug_completed',
-//         'alumni' => $alumni->student_number,
-//         'driver' => $driver
-//     ]);
-// });
 
 Route::get('/programs', function () {
     return Program::select('id', 'name')->orderBy('name')->get();

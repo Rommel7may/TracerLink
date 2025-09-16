@@ -45,8 +45,8 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl font-bold text-gray-800">Instruction Quality Ratings</CardTitle>
-            <CardDescription className="text-sm text-gray-500">
+            <CardTitle className="text-xl font-bold">Instruction Quality Ratings</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
               Distribution of alumni feedback on teaching quality
             </CardDescription>
           </div>
@@ -59,7 +59,7 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
       <CardContent className="space-y-6">
         {/* Summary Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+          <div className="bg-blue-300/10 rounded-xl p-4 text-center">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-blue-200">
                 <Users className="h-5 w-5 text-blue-700" />
@@ -69,7 +69,7 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
             <div className="text-xs font-medium text-blue-600">Total Responses</div>
           </div>
           
-          <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
+          <div className="bg-green-300/10 rounded-xl p-4 text-center">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-green-200">
                 <Star className="h-5 w-5 text-green-700" />
@@ -79,7 +79,7 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
             <div className="text-xs font-medium text-green-600">Average Rating</div>
           </div>
           
-          <div className="bg-purple-50 rounded-xl p-4 text-center border border-purple-100">
+          <div className="bg-purple-300/10 rounded-xl p-4 text-center">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-purple-200">
                 <TrendingUp className="h-5 w-5 text-purple-700" />
@@ -150,7 +150,7 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
                   style={{ 
                     fontSize: 12, 
                     fontWeight: 600,
-                    fill: '#374151'
+                    fill: ''
                   }}
                   formatter={(value: number) => value.toLocaleString()}
                 />
@@ -206,7 +206,7 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
 
         {/* Rating Scale Legend */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm">
             <span className="font-medium">Rating Scale:</span>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map(star => (
@@ -217,7 +217,7 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
               ))}
             </div>
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-muted-foreground">
             {totalResponses} total ratings collected
           </div>
         </div>

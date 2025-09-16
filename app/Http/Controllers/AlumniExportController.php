@@ -3,50 +3,64 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumni;
-use App\Models\Program;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AlumniExportController extends Controller
 {
-    public function export()
+    /**
+     * Export selected or all alumni to Excel
+     * Frontend should send: selectedIds = [1,2,3] (optional)
+     */
+    public function export(Request $request)
     {
         try {
-            $alumni = Alumni::with('program')->get();
+            $selectedIds = $request->input('selectedIds', []);
 
+            // ✅ Query alumni: filter by selected IDs if provided
+            $query = Alumni::with('program');
+            if (!empty($selectedIds)) {
+                $query->whereIn('id', $selectedIds);
+            }
+            $alumni = $query->get();
+
+            if ($alumni->isEmpty()) {
+                return response()->json(['message' => 'No alumni found for export.'], 400);
+            }
+
+            // 📊 Create spreadsheet
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Alumni List');
 
-            // 🎓 Headers — match DB structure
-           // 🎓 Headers — match frontend table
-$headers = [
-    'Student Number',
-    'Email',
-    'Program',
-    'Last Name',
-    'Given Name',
-    'Middle Initial',
-    'Sex',                     // ✅ Added
-    'Present Address',
-    'Active Email',
-    'Contact Number',
-    'Graduation Year',
-    'Employment Status',
-    'Company Name',
-    'Further Studies',
-    'Sector',
-    'Work Location',
-    'Employer Classification',
-    'Related To Course',
-    'Consent Given',
-    'Instruction Rating',
-];
-
+            // 🎓 Headers
+            $headers = [
+                'Student Number',
+                'Email',
+                'Program',
+                'Last Name',
+                'Given Name',
+                'Middle Initial',
+                'Sex',
+                'Present Address',
+                'Active Email',
+                'Contact Number',
+                'Graduation Year',
+                'Employment Status',
+                'Company Name',
+                'Further Studies',
+                'Sector',
+                'Work Location',
+                'Employer Classification',
+                'Related To Course',
+                'Consent Given',
+                'Instruction Rating',
+            ];
 
             $sheet->fromArray($headers, null, 'A1');
 
@@ -54,32 +68,31 @@ $headers = [
             $rowIndex = 2;
             foreach ($alumni as $a) {
                 $sheet->fromArray([
-    $a->student_number,
-    $a->email,
-    $a->program ? $a->program->name : null,
-    $a->last_name,
-    $a->given_name,
-    $a->middle_initial,
-    $a->sex,                                    // ✅ Added
-    $a->present_address,
-    $a->active_email,
-    $a->contact_number,
-    $a->graduation_year,
-    $a->employment_status,
-    $a->company_name,
-    $a->further_studies,
-    $a->sector,
-    $a->work_location,
-    $a->employer_classification,
-    $a->related_to_course,
-    $a->consent ? 'Yes' : 'No',
-    $a->instruction_rating,
-], null, 'A' . $rowIndex++);
-
+                    $a->student_number,
+                    $a->email,
+                    $a->program ? $a->program->name : null,
+                    $a->last_name,
+                    $a->given_name,
+                    $a->middle_initial,
+                    $a->sex,
+                    $a->present_address,
+                    $a->active_email,
+                    $a->contact_number,
+                    $a->graduation_year,
+                    $a->employment_status,
+                    $a->company_name,
+                    $a->further_studies,
+                    $a->sector,
+                    $a->work_location,
+                    $a->employer_classification,
+                    $a->related_to_course,
+                    $a->consent ? 'Yes' : 'No',
+                    $a->instruction_rating,
+                ], null, 'A' . $rowIndex++);
             }
 
             // ✨ Header styling
-            $lastCol = chr(64 + count($headers)); // compute last column (e.g., S for 19 cols)
+            $lastCol = chr(64 + count($headers)); // e.g., S
             $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
                 'font' => ['bold' => true],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
@@ -106,7 +119,7 @@ $headers = [
                 'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ]);
 
-            // 🧾 Generate Excel file in memory
+            // 🧾 Generate Excel file
             $writer = new Xlsx($spreadsheet);
             $fileName = 'alumni-list.xlsx';
 

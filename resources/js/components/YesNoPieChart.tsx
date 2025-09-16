@@ -31,8 +31,8 @@ type Props = {
 
 // 🎨 Color palette for course relevance (warm hues)
 const COLORS: Record<string, string> = {
-  yes: '#10b981',     // emerald-500 (green)
-  no: '#ef4444',      // red-500 (red)
+  yes: '#b45309',     // emerald-500 (green)
+  no: '#f59e0b',      // red-500 (red)
   unsure: '#f59e0b',  // amber-500 (orange)
   unknown: '#6b7280', // gray-500 (gray)
 };
@@ -83,7 +83,7 @@ export default function RelatedChart({ programId, year }: Props) {
               <div 
                 key={`legend-${index}`} 
                 className={`flex items-center justify-between p-2 rounded-lg ${
-                  isMaxValue ? 'bg-gray-100 font-medium' : ''
+                  isMaxValue ? 'shadow-sm bg-green-500/10 font-medium' : ''
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -91,15 +91,15 @@ export default function RelatedChart({ programId, year }: Props) {
                     className="w-4 h-4 rounded-full flex-shrink-0"
                     style={{ backgroundColor: entry.color }}
                   />
-                  <span className="text-sm text-gray-700 capitalize">
+                  <span className="text-sm capitalize">
                     {entry.value}
                   </span>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-900">
+                  <div className="text-sm font-semibold">
                     {entry.payload.visitors.toLocaleString()}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     {percent}%
                   </div>
                 </div>
@@ -109,10 +109,10 @@ export default function RelatedChart({ programId, year }: Props) {
         </div>
         
         {total > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
+          <div className="mt-3 pt-3 border-t">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">Total Responses</span>
-              <span className="text-sm font-bold text-gray-900">{total.toLocaleString()}</span>
+              <span className="text-sm font-medium text-muted-foreground">Total Responses</span>
+              <span className="text-sm font-bold">{total.toLocaleString()}</span>
             </div>
           </div>
         )}
@@ -158,7 +158,7 @@ export default function RelatedChart({ programId, year }: Props) {
                       <Cell
                         key={`cell-${index}`}
                         fill={entry.fill}
-                        stroke={entry.visitors === maxValue ? '#fff' : undefined}
+                        stroke={entry.visitors === maxValue ? '' : undefined}
                         strokeWidth={entry.visitors === maxValue ? 2 : 0}
                       />
                     ))}
@@ -185,8 +185,8 @@ export default function RelatedChart({ programId, year }: Props) {
             
             {/* Legend */}
             <div className="w-full lg:w-1/2">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-800 mb-3 text-center">
+              <div className="border border-gray-10 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center">
                   Response Breakdown
                 </h4>
                 {renderLegend({ payload: data.map((item, index) => ({

@@ -87,6 +87,7 @@ export type Alumni = {
   consent: boolean;
   company_name?: string;
   related_to_course?: string;
+  instruction_rating?: number; 
 };
 
 export function AlumniTable() {
@@ -405,7 +406,7 @@ export function AlumniTable() {
     { accessorKey: 'employer_classification', header: 'Employer Type', cell: ({ getValue }) => getValue() || 'N/A' },
     {
       id: 'actions',
-      header: 'Actions',
+      header: 'Action',
       enableHiding: false,
       cell: ({ row }) => {
         const alumni = row.original;
@@ -417,16 +418,16 @@ export function AlumniTable() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 onClick={() => {
                   setEditingAlumni(alumni);
                   setShowAddModal(true);
                 }}
               >
                 Edit
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem
-                className="text-red-600"
+                className="text-red-600 hover:text-red-500"
                 onClick={() => handleDelete(alumni.id)}
                 disabled={deleteLoading === alumni.id}
               >
@@ -466,34 +467,48 @@ export function AlumniTable() {
   });
 
   const handleExport = async () => {
-    setExportLoading(true);
-    
-    try {
-      const response = await axios.get('/export-alumni', {
-        responseType: 'blob',
-      });
+  setExportLoading(true);
 
-      const blob = new Blob([response.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
+  try {
+    // Kunin ang IDs ng lahat ng rows na current filtered
+    const filteredAlumni = table.getFilteredRowModel().rows;
+    const filteredIds = filteredAlumni
+      .map((row) => row.original.id)
+      .filter((id): id is number => id !== undefined);
 
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'alumni-list.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      toast.success('Alumni list exported ✅');
-    } catch (error: any) {
-      toast.error('Export failed ❌', {
-        description: error?.response?.data?.message || 'Something went wrong.',
-      });
-    } finally {
+    if (filteredIds.length === 0) {
+      toast.error('No alumni to export ❌');
       setExportLoading(false);
+      return;
     }
-  };
+
+    // Send filtered IDs to backend
+    const response = await axios.post('/export-alumni', { selectedIds: filteredIds }, {
+      responseType: 'blob',
+    });
+
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'alumni-list.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    toast.success('Filtered alumni exported ✅');
+  } catch (error: any) {
+    toast.error('Export failed ❌', {
+      description: error?.response?.data?.message || 'Something went wrong.',
+    });
+  } finally {
+    setExportLoading(false);
+  }
+};
+
 
   const selectedCount = Object.keys(rowSelection).length;
 
@@ -544,7 +559,7 @@ export function AlumniTable() {
                     <SelectValue placeholder="Select year" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__clear__">Clear filter</SelectItem>
+                    <SelectItem className="bg-red-500/10" value="__clear__">Clear filter</SelectItem>
                     {graduationYears.map((year) => (
                       <SelectItem key={year} value={year}>
                         {year}
@@ -573,7 +588,7 @@ export function AlumniTable() {
                     <SelectValue placeholder="Select program" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__clear__">Clear filter</SelectItem>
+                    <SelectItem  className="bg-red-500/10"  value="__clear__">Clear filter</SelectItem>
                     {programs.map((prog) => (
                       <SelectItem key={prog.id} value={String(prog.id)}>
                         {prog.name}
@@ -602,7 +617,7 @@ export function AlumniTable() {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem className='bg-gray-100 text-gray-700' value="__clear__">Clear filter</SelectItem>
+                    <SelectItem  className="bg-red-500/10"  value="__clear__">Clear filter</SelectItem>
                     <SelectItem value="Employed">Employed</SelectItem>
                     <SelectItem value="Unemployed">Unemployed</SelectItem>
                   </SelectContent>
@@ -668,14 +683,14 @@ export function AlumniTable() {
             {/* Send Email */}
             <Dialog open={sendEmailOpen} onOpenChange={setSendEmailOpen}>
               <DialogTrigger asChild>
-                <Button 
+                {/* <Button 
                   variant="outline" 
                   className="flex items-center"
                   disabled={selectedCount === 0}
                 >
                   <UsersRound className="mr-2 h-4 w-4" />
                   Send Email
-                </Button>
+                </Button> */}
               </DialogTrigger>
 
               <DialogContent>
@@ -732,7 +747,7 @@ export function AlumniTable() {
                 <SelectItem value="20">20</SelectItem>
                 <SelectItem value="50">50</SelectItem>
                 <SelectItem value="100">100</SelectItem>
-                <SelectItem value="1000000">All</SelectItem>
+                {/* <SelectItem value="1000000">All</SelectItem> */}
               </SelectContent>
             </Select>
           </div>
@@ -787,38 +802,42 @@ export function AlumniTable() {
             </DialogDescription>
           </DialogHeader>
 
-          <AlumniForm
-            key={editingAlumni?.student_number || 'create'}
-            mode={editingAlumni ? 'edit' : 'create'}
-            id={editingAlumni?.id}
-            student_number={editingAlumni?.student_number}
-            email={editingAlumni?.email}
-            program_id={
-              typeof editingAlumni?.program_id === 'object'
-                ? editingAlumni.program_id.id
-                : editingAlumni?.program_id
-            }
-            last_name={editingAlumni?.last_name}
-            given_name={editingAlumni?.given_name}
-            middle_initial={editingAlumni?.middle_initial}
-            present_address={editingAlumni?.present_address}
-            active_email={editingAlumni?.active_email}
-            contact_number={editingAlumni?.contact_number}
-            graduation_year={editingAlumni?.graduation_year?.toString()}
-            employment_status={editingAlumni?.employment_status}
-            company_name={editingAlumni?.company_name}
-            further_studies={editingAlumni?.further_studies}
-            sector={editingAlumni?.sector}
-            work_location={editingAlumni?.work_location}
-            employer_classification={editingAlumni?.employer_classification}
-            related_to_course={editingAlumni?.related_to_course}
-            consent={editingAlumni?.consent ?? false}
-            onSuccess={() => {
-              fetchAlumni();
-              setShowAddModal(false);
-              setEditingAlumni(null);
-            }}
-          />
+   <AlumniForm
+  key={editingAlumni?.student_number || 'create'}
+  mode={editingAlumni ? 'edit' : 'create'}
+  id={editingAlumni?.id}
+  student_number={editingAlumni?.student_number}
+  email={editingAlumni?.email}
+  program_id={
+    typeof editingAlumni?.program_id === 'object'
+      ? editingAlumni.program_id.id
+      : editingAlumni?.program_id
+  }
+  last_name={editingAlumni?.last_name}
+  given_name={editingAlumni?.given_name}
+  middle_initial={editingAlumni?.middle_initial}
+  present_address={editingAlumni?.present_address}
+  active_email={editingAlumni?.active_email}
+  contact_number={editingAlumni?.contact_number}
+  graduation_year={editingAlumni?.graduation_year?.toString()}
+  employment_status={editingAlumni?.employment_status}
+  company_name={editingAlumni?.company_name}
+  further_studies={editingAlumni?.further_studies}
+  sector={editingAlumni?.sector}
+  work_location={editingAlumni?.work_location}
+  employer_classification={editingAlumni?.employer_classification}
+  related_to_course={editingAlumni?.related_to_course}
+  consent={editingAlumni?.consent ?? false}
+  sex={editingAlumni?.sex}
+ instruction_rating={editingAlumni?.instruction_rating}  // ⭐ StarRating value
+  onSuccess={() => {
+    fetchAlumni();
+    setShowAddModal(false);
+    setEditingAlumni(null);
+  }}
+/>
+
+
         </DialogContent>
       </Dialog>
 
@@ -868,7 +887,7 @@ export function AlumniTable() {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="font-semibold text-gray-900">
+                    <TableHead key={header.id} className="font-semibold">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
