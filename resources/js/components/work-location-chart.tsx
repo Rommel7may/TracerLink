@@ -81,7 +81,7 @@ export default function LocationPieChart({ programId, year }: Props) {
               <div 
                 key={`legend-${index}`} 
                 className={`flex items-center justify-between p-2 rounded-lg ${
-                  isMaxValue ? 'bg-gray-100 font-medium' : ''
+                  isMaxValue ? 'bg-green-500/10 font-medium' : ''
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -89,15 +89,15 @@ export default function LocationPieChart({ programId, year }: Props) {
                     className="w-4 h-4 rounded-full flex-shrink-0"
                     style={{ backgroundColor: entry.color }}
                   />
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm ">
                     {entry.value}
                   </span>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-900">
+                  <div className="text-sm font-semibold">
                     {entry.payload.visitors.toLocaleString()}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     {percent}%
                   </div>
                 </div>
@@ -107,10 +107,10 @@ export default function LocationPieChart({ programId, year }: Props) {
         </div>
         
         {total > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
+          <div className="mt-3 pt-3 border-t">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">Total Responses</span>
-              <span className="text-sm font-bold text-gray-900">{total.toLocaleString()}</span>
+              <span className="text-sm font-medium text-muted-foreground">Total Responses</span>
+              <span className="text-sm font-bold">{total.toLocaleString()}</span>
             </div>
           </div>
         )}
@@ -156,7 +156,7 @@ export default function LocationPieChart({ programId, year }: Props) {
                       <Cell
                         key={`cell-${index}`}
                         fill={entry.fill}
-                        stroke={entry.visitors === maxValue ? '#fff' : undefined}
+                        stroke={entry.visitors === maxValue ? '' : undefined}
                         strokeWidth={entry.visitors === maxValue ? 2 : 0}
                       />
                     ))}
@@ -183,8 +183,8 @@ export default function LocationPieChart({ programId, year }: Props) {
             
             {/* Legend */}
             <div className="w-full lg:w-1/2">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-800 mb-3 text-center">
+              <div className="border border-gray-10 rounded-lg p-4">
+                <h4 className="text-sm font-semibold mb-3 text-center">
                   Location Breakdown
                 </h4>
                 {renderLegend({ payload: data.map((item, index) => ({

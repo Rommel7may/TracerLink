@@ -22,6 +22,8 @@ import {
   Link2,
   FormInputIcon,
   FolderMinusIcon,
+  GraduationCap,
+  FileText,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppearanceTabs from './appearance-tabs';
@@ -55,21 +57,15 @@ const primaryNavItems: NavItem[] = [
 //bot
 const secondaryNavItems: NavItem[] = [
   {
-    title: 'Email Alumni Form',
+    title: 'Manage Students',
     href: '/send',
-    icon: Forward,
+    icon: GraduationCap,
   },
   {
-    title: 'Email Job Opportunity',
+    title: 'Manage Job Posts',
     href: '/jobpost',
-    icon: Forward,
-  },
-   {
-    title: 'Test Form',
-    href: '/test',
-    icon: FolderMinusIcon,
-  },
-  
+    icon: FileText,
+  },  
 ];
 
 const footerNavItems: NavItem[] = [

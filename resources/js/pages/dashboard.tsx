@@ -15,10 +15,10 @@ type Program = {
 
 type AlumniPerYear = {
   year: string
-  total: number
   employed: number
   unemployed: number
-  nottracked: number
+  notTracked: number
+  total: number
 }
 
 type RatingCount = {
@@ -62,11 +62,8 @@ export default function Dashboard({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Graduates Line Chart */}
           <div className="gap-7">
-            <div className="">
-            
-            </div >
             <GraduatesLineChart />
-            <div className="mt-6">
+            <div className="mt-13">
                <AlumniRatingBarChart ratingCounts={ratingCounts} />
             </div>
             
@@ -74,11 +71,8 @@ export default function Dashboard({
 
           {/* Gender Distribution Chart */}
           <div>
-            <div className="">
-             
-            </div>
             <GenderChart />
-            <div className="mt-20">
+            <div className="mt-1">
               <AlumniBarChart alumniPerYear={alumniPerYear} />
             </div>
              

@@ -24,29 +24,29 @@ export function SendEmailToSelected({ selectedStudents, disabled = false }: Prop
   const [open, setOpen] = React.useState(false)
   const [isSending, setIsSending] = React.useState(false)
 
-  const handleSend = async () => {
-    // Filter only students with valid emails
-    const emails = selectedStudents.map(s => s.email).filter((e): e is string => Boolean(e))
+  // Calculate the number of students with valid emails
+  const studentsWithEmails = React.useMemo(() => {
+    return selectedStudents.filter(s => s.email && s.email.trim() !== "").length
+  }, [selectedStudents])
 
+  const handleSend = async () => {
+    const emails = selectedStudents.map(s => s.email).filter((e): e is string => Boolean(e))
     if (!emails.length) {
       toast.error("Selected students have no email addresses!")
       return
     }
 
-    // if (!confirm(`Send email to ${emails.length} students?`)) return
-
     setIsSending(true)
-    
     try {
       const response = await axios.post("/students/send-email", { emails })
-      const { sent, failed } = response.data
+      const { queued, failed } = response.data
 
-      if (failed.length > 0) {
+      if (failed?.length > 0) {
         toast.warning(`Some emails failed: ${failed.join(", ")}`)
       }
 
-      if (sent.length > 0) {
-        toast.success(`Emails sent successfully! 📧 (${sent.length} students)`)
+      if (queued?.length > 0) {
+        toast.success(`Sent to ${queued.length} email(s) successfully!`)
       }
 
       setOpen(false)
@@ -77,26 +77,24 @@ export function SendEmailToSelected({ selectedStudents, disabled = false }: Prop
       }}>
         <Tooltip>
   <TooltipTrigger asChild>
-    <div> {/* Wrap the button in a div for tooltip to work on disabled elements */}
-      <DialogTrigger asChild>
-        <Button 
-          variant="default" 
-          disabled={disabled || selectedStudents.length === 0}
-        >
-          <FileInput className="w-4 h-4 mr-2" />
-          Send Form
-        </Button>
-      </DialogTrigger>
+    <div className="inline-block"> {/* Wrap in div for tooltip to work on disabled button */}
+      <Button 
+        variant="default" 
+        disabled={disabled || selectedStudents.length === 0}
+        onClick={() => setOpen(true)}
+      >
+        <FileInput className="w-4 h-4 mr-2" />
+        Send Form
+      </Button>
     </div>
   </TooltipTrigger>
   <TooltipContent>
     <p>
       {disabled 
         ? ""
-         
         : selectedStudents.length === 0 
-          ? "Please select at least one student" 
-          : "Send form to selected students"
+          ? "This  will be sent to selected year or student" 
+          : "This  will be sent to selected year or student"
       }
     </p>
   </TooltipContent>
@@ -110,14 +108,19 @@ export function SendEmailToSelected({ selectedStudents, disabled = false }: Prop
           <div className="py-4">
             <p>Send email form to {selectedStudents.length} selected students?</p>
             <p className="text-sm text-muted-foreground mt-2">
-              {selectedStudents.filter(s => s.email).length} students have valid email addresses
+              {studentsWithEmails} students have valid email addresses
             </p>
+            {studentsWithEmails === 0 && (
+              <p className="text-sm text-destructive mt-2">
+                Cannot send emails: No valid email addresses found
+              </p>
+            )}
           </div>
 
           <DialogFooter className="flex justify-end gap-2">
             <Button 
               onClick={handleSend} 
-              disabled={isSending || selectedStudents.filter(s => s.email).length === 0}
+              disabled={isSending || studentsWithEmails === 0}
             >
               {isSending ? (
                 <>

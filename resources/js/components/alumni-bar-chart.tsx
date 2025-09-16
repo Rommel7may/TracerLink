@@ -1,7 +1,8 @@
 "use client"
 
-import { TrendingUp, Users, Briefcase, UserX, Target } from "lucide-react"
+import { TrendingUp, Users, Briefcase, UserX, Target, ChevronLeft, ChevronRight } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, LabelList, ResponsiveContainer } from "recharts"
+import { useState } from "react"
 
 import {
   Card,
@@ -17,12 +18,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { Label } from "./ui/label"
 
 type AlumniPerYear = {
   year: string
   employed: number
   unemployed: number
+  notTracked: number
   total: number
 }
 
@@ -39,33 +40,106 @@ const chartConfig = {
     label: "Unemployed",
     color: "#dc2626", // red-600
   },
+  notTracked: {
+    label: "Not Tracked",
+    color: "#d97706", // amber-600
+  },
 } satisfies ChartConfig
 
-export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear[] }) {
-  // First, ensure all values are numbers (not strings)
-  const sanitizedData = alumniPerYear.map(item => ({
-    year: item.year,
-    employed: typeof item.employed === 'string' ? parseInt(item.employed) || 0 : item.employed,
-    unemployed: typeof item.unemployed === 'string' ? parseInt(item.unemployed) || 0 : item.unemployed,
-    total: typeof item.total === 'string' ? parseInt(item.total) || 0 : item.total,
-  }))
 
-  // Calculate statistics using sanitized data
+export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear[] }) {
+  const [groupSize, setGroupSize] = useState<number>(1)
+  const [viewMode, setViewMode] = useState<'grouped' | 'individual'>('individual')
+
+  // First, ensure all values are numbers (not strings)
+    const sanitizedData = alumniPerYear.map(item => {
+    const employed = typeof item.employed === 'string' ? parseInt(item.employed) || 0 : item.employed
+    const unemployed = typeof item.unemployed === 'string' ? parseInt(item.unemployed) || 0 : item.unemployed
+    const total = typeof item.total === 'string' ? parseInt(item.total) || 0 : item.total
+    let notTracked = typeof item.notTracked === 'string' ? parseInt(item.notTracked) || 0 : item.notTracked
+
+    // Auto-compute kapag walang value galing backend
+    if ((!notTracked || isNaN(notTracked)) && total > 0) {
+      notTracked = total - (employed + unemployed)
+    }
+
+    return {
+      year: item.year,
+      employed,
+      unemployed,
+      notTracked,
+      total,
+    }
+  })
+
+
+  // Function to group years
+  const groupYears = (data: AlumniPerYear[], size: number) => {
+    if (size === 1) return data
+    
+    const grouped: AlumniPerYear[] = []
+    
+    for (let i = 0; i < data.length; i += size) {
+      const chunk = data.slice(i, i + size)
+      const groupedItem = {
+        year: chunk.length === 1 ? chunk[0].year : `${chunk[chunk.length - 1].year}-${chunk[0].year}`,
+        employed: chunk.reduce((sum, item) => sum + item.employed, 0),
+        unemployed: chunk.reduce((sum, item) => sum + item.unemployed, 0),
+         notTracked: chunk.reduce((sum, item) => sum + item.notTracked, 0),
+        total: chunk.reduce((sum, item) => sum + item.total, 0)
+      }
+      grouped.push(groupedItem)
+    }
+    
+    return grouped
+  }
+
+  // Determine optimal group size based on data length
+  const calculateOptimalGroupSize = (dataLength: number) => {
+    if (dataLength > 20) return 5
+    if (dataLength > 15) return 4
+    if (dataLength > 10) return 3
+    if (dataLength > 6) return 2
+    return 1
+  }
+
+  // Auto-detect if grouping is needed
+  const shouldAutoGroup = sanitizedData.length > 8
+  const optimalGroupSize = calculateOptimalGroupSize(sanitizedData.length)
+
+  // Use grouped data if auto-grouping is enabled, otherwise use individual years
+  const displayData = viewMode === 'grouped' 
+    ? groupYears(sanitizedData, groupSize)
+    : sanitizedData
+
+  // Reverse data for horizontal chart (newest at top)
+  const chartData = [...displayData].reverse()
+
+  // Calculate statistics using sanitized data (not display data)
   const totalAlumni = sanitizedData.reduce((sum, year) => sum + year.total, 0)
   const totalEmployed = sanitizedData.reduce((sum, year) => sum + year.employed, 0)
   const totalUnemployed = sanitizedData.reduce((sum, year) => sum + year.unemployed, 0)
-  const employmentRate = totalAlumni > 0 ? Math.round((totalEmployed / (totalEmployed + totalUnemployed)) * 100) : 0
+  const totalNotTracked = sanitizedData.reduce((sum, year) => sum + year.notTracked, 0)
 
-  // Reverse data for horizontal chart (newest at top)
-  const chartData = [...sanitizedData].reverse()
+  // Calculate employment rate based only on employed vs unemployed (excluding not tracked)
+  const employmentRate = (totalEmployed + totalUnemployed) > 0 
+    ? Math.round((totalEmployed / (totalEmployed + totalUnemployed)) * 100) 
+    : 0
 
   // Safe number formatting function
   const formatNumber = (num: number) => {
     try {
       return num.toLocaleString()
     } catch (error) {
-      return num.toString() // Fallback if toLocaleString fails
+      return num.toString()
     }
+  }
+
+  // Dynamic font sizing
+  const getFontSize = (dataLength: number) => {
+    if (dataLength > 15) return 10
+    if (dataLength > 10) return 11
+    return 12
   }
 
   return (
@@ -73,8 +147,8 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl font-bold text-gray-800">Alumni Employment Overview</CardTitle>
-            <CardDescription className="text-sm text-gray-500">
+            <CardTitle className="text-xl font-bold">Alumni Employment Overview</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
               Yearly breakdown of alumni employment status
             </CardDescription>
           </div>
@@ -86,8 +160,8 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
 
       <CardContent className="space-y-6">
         {/* Summary Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="bg-gray-500/10 rounded-xl p-4 text-center shadow-sm">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-gray-200">
                 <Users className="h-5 w-5 text-gray-700" />
@@ -97,7 +171,7 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
             <div className="text-xs font-medium text-gray-600">Total Alumni</div>
           </div>
           
-          <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
+          <div className="bg-green-500/10 rounded-xl p-4 text-center shadow-sm">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-green-200">
                 <Briefcase className="h-5 w-5 text-green-700" />
@@ -107,7 +181,7 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
             <div className="text-xs font-medium text-green-600">Employed</div>
           </div>
           
-          <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
+          <div className="bg-red-500/10 rounded-xl p-4 text-center shadow-sm">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-red-200">
                 <UserX className="h-5 w-5 text-red-700" />
@@ -116,8 +190,18 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
             <div className="text-2xl font-bold text-red-700">{formatNumber(totalUnemployed)}</div>
             <div className="text-xs font-medium text-red-600">Unemployed</div>
           </div>
-          
-          <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+
+          <div className="bg-amber-500/10 rounded-xl p-4 text-center shadow-sm">
+            <div className="flex justify-center mb-2">
+              <div className="p-2 rounded-full bg-amber-200">
+                <Users className="h-5 w-5 text-amber-700" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-amber-700">{formatNumber(totalNotTracked)}</div>
+            <div className="text-xs font-medium text-amber-600">Not Tracked</div>
+          </div>
+
+          <div className="bg-blue-500/10 rounded-xl p-4 text-center shadow-sm">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-blue-200">
                 <Target className="h-5 w-5 text-blue-700" />
@@ -128,150 +212,245 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
           </div>
         </div>
 
-        {/* Horizontal Bar Chart */}
-        <div className="h-80 ">
-          <ChartContainer config={chartConfig}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                layout="vertical"
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 80, bottom: 20 }}
-                barCategoryGap={12}
-                barGap={4}
+        {/* View Mode Toggle */}
+        {sanitizedData.length > 6 && (
+          <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+            <span className="text-sm font-medium text-gray-700">View Mode:</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setViewMode('individual')
+                  setGroupSize(1)
+                }}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewMode === 'individual'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                }`}
               >
-                <CartesianGrid 
-                  horizontal={true} 
-                  vertical={false}
-                  strokeDasharray="3 3" 
-                  stroke="#f3f4f6" 
-                />
-                
-                <XAxis
-                  type="number"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={10}
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
-                  tickFormatter={(value) => formatNumber(value)}
-                />
-                
-                <YAxis
-                  type="category"
-                  dataKey="year"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={10}
-                  tick={{ fontSize: 12, fill: '#374151', fontWeight: 500 }}
-                  width={70}
-                />
+                Individual Years
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('grouped')
+                  setGroupSize(optimalGroupSize)
+                }}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewMode === 'grouped'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Grouped Years
+              </button>
+            </div>
+          </div>
+        )}
 
-                <ChartTooltip
-                  cursor={{ fill: "rgba(0,0,0,0.04)" }}
-                  content={
-                    <ChartTooltipContent 
-                      indicator="line"
-                      labelFormatter={(value) => `Graduation Year: ${value}`}
-                      formatter={(value, name) => {
-                        const label = chartConfig[name as keyof typeof chartConfig]?.label || name;
-                        return [`${formatNumber(Number(value))} alumni`, label];
-                      }}
+        {/* Group Size Controls */}
+        {viewMode === 'grouped' && sanitizedData.length > 6 && (
+          <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+            <span className="text-sm font-medium text-gray-700">Group Size:</span>
+            <div className="flex gap-2">
+              {[2, 3, 4, 5].map(size => (
+                <button
+                  key={size}
+                  onClick={() => setGroupSize(size)}
+                  className={`px-3 py-1 rounded-md text-sm font-medium ${
+                    groupSize === size
+                      ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                      : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {size} Years
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Horizontal Bar Chart with Scrollable Container */}
+        <div className="h-80 relative">
+          <div className="absolute inset-0 overflow-x-auto">
+            <div 
+              className="h-full" 
+              style={{ minWidth: chartData.length > 8 ? "800px" : "600px" }}
+            >
+              <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 80, bottom: 20 }}
+                    barCategoryGap={12}
+                    barGap={4}
+                  >
+                    <CartesianGrid 
+                      horizontal={true} 
+                      vertical={false}
+                      strokeDasharray="3 3" 
+                      stroke="#f3f4f6" 
                     />
-                  }
-                />
+                    
+                    <XAxis
+                      type="number"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={10}
+                      tick={{ fontSize: 11, fill: '#6b7280' }}
+                      tickFormatter={(value) => formatNumber(value)}
+                    />
+                    
+                    <YAxis
+                      type="category"
+                      dataKey="year"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={10}
+                      tick={{ 
+                        fontSize: getFontSize(chartData.length), 
+                        fill: '#374151', 
+                        fontWeight: 500 
+                      }}
+                      width={chartData.length > 10 ? 80 : 70}
+                    />
 
-                {/* Total Bar */}
-                <Bar 
-                  dataKey="total" 
-                  fill="var(--color-total)" 
-                  radius={[0, 4, 4, 0]}
-                  name="total"
-                >
-                  <LabelList 
-                    dataKey="total" 
-                    position="right" 
-                    style={{ 
-                      fontSize: 11, 
-                      fontWeight: 500,
-                      fill: '#374151'
-                    }} 
-                    formatter={(value: number) => formatNumber(value)}
-                  />
-                </Bar>
+                    <ChartTooltip
+                      cursor={{ fill: "rgba(0,0,0,0.04)" }}
+                      content={
+                        <ChartTooltipContent 
+                          indicator="line"
+                          labelFormatter={(value) => `Graduation ${viewMode === 'grouped' ? 'Period' : 'Year'}: ${value}`}
+                          formatter={(value, name) => {
+                            const label = chartConfig[name as keyof typeof chartConfig]?.label || name;
+                            return [`${formatNumber(Number(value))} alumni`, label];
+                          }}
+                        />
+                      }
+                    />
 
-                {/* Employed Bar */}
-                <Bar 
-                  dataKey="employed" 
-                  fill="var(--color-employed)" 
-                  radius={[0, 4, 4, 0]}
-                  name="employed"
-                >
-                  <LabelList 
-                    dataKey="employed" 
-                    position="right" 
-                    style={{ 
-                      fontSize: 11, 
-                      fontWeight: 500,
-                      fill: '#065f46'
-                    }} 
-                    formatter={(value: number) => formatNumber(value)}
-                  />
-                </Bar>
+                    {/* Total Bar */}
+                    <Bar 
+                      dataKey="total" 
+                      fill="var(--color-total)" 
+                      radius={[0, 4, 4, 0]}
+                      name="total"
+                    >
+                      <LabelList 
+                        dataKey="total" 
+                        position="right" 
+                        style={{ 
+                          fontSize: 11, 
+                          fontWeight: 500,
+                          fill: '#374151'
+                        }} 
+                        formatter={(value: number) => formatNumber(value)}
+                      />
+                    </Bar>
 
-                {/* Unemployed Bar */}
-                <Bar 
-                  dataKey="unemployed" 
-                  fill="var(--color-unemployed)" 
-                  radius={[0, 4, 4, 0]}
-                  name="unemployed"
-                >
-                  <LabelList 
-                    dataKey="unemployed" 
-                    position="right" 
-                    style={{ 
-                      fontSize: 11, 
-                      fontWeight: 500,
-                      fill: '#991b1b'
-                    }} 
-                    formatter={(value: number) => formatNumber(value)}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+                    {/* Employed Bar */}
+                    <Bar 
+                      dataKey="employed" 
+                      fill="var(--color-employed)" 
+                      radius={[0, 4, 4, 0]}
+                      name="employed"
+                    >
+                      <LabelList 
+                        dataKey="employed" 
+                        position="right" 
+                        style={{ 
+                          fontSize: 11, 
+                          fontWeight: 500,
+                          fill: '#065f46'
+                        }} 
+                        formatter={(value: number) => formatNumber(value)}
+                      />
+                    </Bar>
+
+                    {/* Unemployed Bar */}
+                    <Bar 
+                      dataKey="unemployed" 
+                      fill="var(--color-unemployed)" 
+                      radius={[0, 4, 4, 0]}
+                      name="unemployed"
+                    >
+                      <LabelList 
+                        dataKey="unemployed" 
+                        position="right" 
+                        style={{ 
+                          fontSize: 11, 
+                          fontWeight: 500,
+                          fill: '#991b1b'
+                        }} 
+                        formatter={(value: number) => formatNumber(value)}
+                      />
+                    </Bar>
+
+                    {/* Not Tracked Bar */}
+                    <Bar 
+                      dataKey="notTracked" 
+                      fill="var(--color-notTracked)" 
+                      radius={[0, 4, 4, 0]}
+                      name="notTracked"
+                    >
+                      <LabelList 
+                        dataKey="notTracked" 
+                        position="right" 
+                        style={{ 
+                          fontSize: 11, 
+                          fontWeight: 500,
+                          fill: '#92400e' 
+                        }} 
+                        formatter={(value: number) => formatNumber(value)}
+                      />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          </div>
         </div>
-<Label>Total response per year</Label>
-        {/* Chart Legend */}
-       <div
-  className="flex flex-wrap justify-center gap-4 pt-2"
-  style={{
-    '--color-total': chartConfig.total.color,
-    '--color-employed': chartConfig.employed.color,
-    '--color-unemployed': chartConfig.unemployed.color,
-  } as React.CSSProperties}
->
-  
-  <div className="flex items-center gap-2">
-    <div className="w-4 h-4 rounded-sm bg-[var(--color-total)]"></div>
-    <span className="text-sm font-medium text-gray-700">Total Alumni</span>
-  </div>
-  <div className="flex items-center gap-2">
-    <div className="w-4 h-4 rounded-sm bg-[var(--color-employed)]"></div>
-    <span className="text-sm font-medium text-gray-700">Employed</span>
-  </div>
-  <div className="flex items-center gap-2">
-    <div className="w-4 h-4 rounded-sm bg-[var(--color-unemployed)]"></div>
-    <span className="text-sm font-medium text-gray-700">Unemployed</span>
-  </div>
-</div>
 
+        {/* Chart Legend */}
+        <div
+          className="flex flex-wrap justify-center gap-4 pt-2"
+          style={{
+            '--color-total': chartConfig.total.color,
+            '--color-employed': chartConfig.employed.color,
+            '--color-unemployed': chartConfig.unemployed.color,
+            '--color-notTracked': chartConfig.notTracked.color,
+          } as React.CSSProperties}
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-sm bg-[var(--color-total)]"></div>
+            <span className="text-sm font-medium text-gray-700">Total Alumni</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-sm bg-[var(--color-employed)]"></div>
+            <span className="text-sm font-medium text-gray-700">Employed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-sm bg-[var(--color-unemployed)]"></div>
+            <span className="text-sm font-medium text-gray-700">Unemployed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-sm bg-[var(--color-notTracked)]"></div>
+            <span className="text-sm font-medium text-gray-700">Not Tracked</span>
+          </div>
+        </div>
       </CardContent>
 
       <CardFooter className="flex flex-col items-start gap-1 text-sm pt-4 border-t">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <TrendingUp className="h-4 w-4" />
-          <span>Employment trends over {sanitizedData.length} years</span>
+          <span>
+            {viewMode === 'grouped' 
+              ? `Grouped data (${groupSize} years per group)`
+              : `Individual year data`
+            } • {sanitizedData.length} total years
+          </span>
         </div>
-        <div className="text-gray-500">
+        <div className="text-muted-foreground">
           Data updated {new Date().toLocaleDateString()}
         </div>
       </CardFooter>

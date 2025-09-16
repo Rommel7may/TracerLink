@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\Alumni;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\SendAlumniFormEmail;
 
 class SendController extends Controller
 {
@@ -21,97 +22,84 @@ class SendController extends Controller
 
     // Send email to selected students
     public function sendEmail(Request $request)
-    {
-        $request->validate([
-            'emails' => 'required|array|min:1',
-            'emails.*' => 'required|email',
-        ]);
+{
+    $request->validate([
+        'emails' => 'required|array|min:1',
+        'emails.*' => 'required|email',
+    ]);
 
-        $emails = $request->emails;
-        $sent = [];
-        $failed = [];
+    $emails = $request->emails;
+    $queued = [];
+    $failed = [];
 
-        foreach ($emails as $email) {
-            $student = Student::where('email', $email)->first();
+    foreach ($emails as $email) {
+        $student = Student::where('email', $email)->first();
 
-            if (!$student) {
-                $failed[] = $email;
-                continue;
-            }
-
-            try {
-                Mail::send('emails.alumni-form', [
-                    'student' => $student,
-                    'formUrl' => url("/alumni-form/{$student->student_number}")
-                ], function ($message) use ($student) {
-                    $message->to($student->email)
-                            ->subject('Fill Out Your DHVSU Alumni Tracer Form');
-                });
-
-                $sent[] = $email;
-            } catch (\Exception $e) {
-                Log::error("Failed to send to {$student->email}: " . $e->getMessage());
-                $failed[] = $email;
-            }
+        if (!$student) {
+           $failed[] = $email;
+            continue;
         }
 
-        return response()->json([
-            'message' => count($sent) . ' emails sent successfully.',
-            'sent' => $sent,
-            'failed' => $failed,
-        ]);
+        try {
+            // ✅ Dispatch to queue instead of sending immediately
+            SendAlumniFormEmail::dispatch($student);
+
+            $queued[] = $email;
+        } catch (\Exception $e) {
+            Log::error("Failed to queue {$student->email}: " . $e->getMessage());
+            $failed[] = $email;
+        }
     }
+
+    return response()->json([
+        'message' => count($queued) . ' Email have been sent successfully!',
+        'queued' => $queued,
+        'failed' => $failed,
+    ]);
+}
 
     // Send email to alumni by program
     public function sendToProgram(Request $request)
-    {
-        $request->validate([
-            'program' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'program' => 'required|string',
+    ]);
 
-        $alumniList = Alumni::where('program', $request->program)
-            ->whereNotNull('email')
-            ->where('email', '!=', '')
-            ->where('consent', true)
-            ->get();
+    $alumniList = Alumni::where('program', $request->program)
+        ->whereNotNull('email')
+        ->where('email', '!=', '')
+        ->where('consent', true)
+        ->get();
 
-        $sent = [];
-        $failed = [];
+    $queued = [];
+    $failed = [];
 
-        foreach ($alumniList as $alum) {
-            try {
-                Mail::send('emails.alumni-form', [
-                    'student' => $alum,
-                    'formUrl' => url("/alumni-form/{$alum->student_number}")
-                ], function ($message) use ($alum) {
-                    $message->to($alum->email)
-                            ->subject('Fill Out Your DHVSU Alumni Tracer Form');
-                });
+    foreach ($alumniList as $alum) {
+        try {
+            SendAlumniFormEmail::dispatch($alum);
 
-                $alum->update([
-                    'email_sent_at' => now(),
-                    'email_status' => 'sent',
-                ]);
+            $alum->update([
+                'email_status' => 'queued',
+            ]);
 
-                $sent[] = $alum->email;
-            } catch (\Exception $e) {
-                Log::error("Failed to send to {$alum->email}: " . $e->getMessage());
+            $queued[] = $alum->email;
+        } catch (\Exception $e) {
+            Log::error("Failed to queue {$alum->email}: " . $e->getMessage());
 
-                $alum->update([
-                    'email_status' => 'failed',
-                ]);
+            $alum->update([
+                'email_status' => 'failed',
+            ]);
 
-                $failed[] = $alum->email;
-            }
+            $failed[] = $alum->email;
         }
-
-        return response()->json([
-            'message' => '✅ Alumni emails by program processed.',
-            'sent' => $sent,
-            'failed' => $failed,
-        ]);
     }
 
+    return response()->json([
+        'message' => '📩 Alumni emails have been queued by program.',
+        'queued' => $queued,
+        'failed' => $failed,
+    ]);
+}
     // Update alumni info based on student_number
     public function updateAlumniForm(Request $request)
     {

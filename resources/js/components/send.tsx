@@ -1,7 +1,9 @@
 'use client';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,19 +26,20 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import axios from 'axios';
-import { DownloadCloudIcon, MoreHorizontal, PlusIcon, Trash, Search, FileUp } from 'lucide-react';
+import { DownloadCloudIcon, FileUp, MoreHorizontal, PlusIcon, Search, Trash } from 'lucide-react';
 import * as React from 'react';
 import { toast, Toaster } from 'sonner';
 
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { SendEmailToSelected } from './SendEmailToProgram';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip';
+
 export type Student = {
     id: number;
     student_number: string;
     student_name: string;
     email?: string;
+    year: number;
 };
 
 export default function StudentIndex() {
@@ -50,12 +53,17 @@ export default function StudentIndex() {
     const [showUploadModal, setShowUploadModal] = React.useState(false);
     const [excelFile, setExcelFile] = React.useState<File | null>(null);
     const [rowSelection, setRowSelection] = React.useState({});
+    const [yearFilter, setYearFilter] = React.useState<string>('');
+    const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+    const [deleteId, setDeleteId] = React.useState<number | null>(null);
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = React.useState(false);
 
     const { data, setData, reset, processing } = useForm({
         id: '',
         student_number: '',
         student_name: '',
         email: '',
+        year: new Date().getFullYear().toString(),
     });
 
     React.useEffect(() => {
@@ -72,16 +80,17 @@ export default function StudentIndex() {
         const exportData = data.map((student) => ({
             'Student Number': student.student_number,
             'Student Name': student.student_name,
-            'Email': student.email || '',
+            Email: student.email || '',
+            Year: student.year,
         }));
 
         const ws = XLSX.utils.json_to_sheet(exportData);
         const headerRange = XLSX.utils.decode_range(ws['!ref'] || '');
-        
+
         for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
             const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
             if (!ws[cellAddress]) continue;
-            
+
             ws[cellAddress].s = {
                 font: { bold: true, color: { rgb: 'FFFFFF' } },
                 fill: { fgColor: { rgb: '4F46E5' } },
@@ -89,17 +98,13 @@ export default function StudentIndex() {
             };
         }
 
-        ws['!cols'] = [
-            { wch: 20 },
-            { wch: 30 },
-            { wch: 30 },
-        ];
+        ws['!cols'] = [{ wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 10 }];
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Students');
         const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
         const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-        
+
         saveAs(blob, `students_${new Date().toISOString().split('T')[0]}.xlsx`);
     }, []);
 
@@ -115,7 +120,7 @@ export default function StudentIndex() {
             const res = await axios.post('/students/import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            
+
             toast.success(res.data.message || 'Import successful!');
             setShowUploadModal(false);
             router.reload();
@@ -129,22 +134,18 @@ export default function StudentIndex() {
     // Add/Edit Student
     const handleSubmitStudent = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         try {
             const url = editId ? `/students/${editId}` : '/students';
             const method = editId ? 'put' : 'post';
-            
+
             const response = await axios[method](url, data);
             const studentData = response.data;
 
-            setStudentList(prev => 
-                editId 
-                    ? prev.map(s => s.id === editId ? studentData : s)
-                    : [...prev, studentData]
-            );
+            setStudentList((prev) => (editId ? prev.map((s) => (s.id === editId ? studentData : s)) : [...prev, studentData]));
 
             toast.success(`Student ${editId ? 'updated' : 'added'}!`, {
-                description: `${studentData.student_number} – ${studentData.student_name}`
+                description: `${studentData.student_number} – ${studentData.student_name}`,
             });
 
             reset();
@@ -157,13 +158,15 @@ export default function StudentIndex() {
     };
 
     // Single delete
-    const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this student?')) return;
-        
+    const handleDelete = async () => {
+        if (!deleteId) return;
+
         try {
-            await axios.delete(`/students/${id}`);
-            setStudentList(prev => prev.filter(s => s.id !== id));
+            await axios.delete(`/students/${deleteId}`);
+            setStudentList((prev) => prev.filter((s) => s.id !== deleteId));
             toast.success('Student deleted!');
+            setShowDeleteModal(false);
+            setDeleteId(null);
         } catch (err) {
             console.error('Delete error:', err);
             toast.error('Failed to delete student ❌');
@@ -172,15 +175,19 @@ export default function StudentIndex() {
 
     // Bulk delete
     const handleBulkDelete = async () => {
-        const selectedIds = table.getSelectedRowModel().rows.map(r => r.original.id).filter(Boolean) as number[];
-        
-        if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} students?`)) return;
+        const selectedIds = table
+            .getSelectedRowModel()
+            .rows.map((r) => r.original.id)
+            .filter(Boolean) as number[];
+
+        if (!selectedIds.length) return;
 
         try {
             await axios.post('/students/bulk-delete', { ids: selectedIds });
-            setStudentList(prev => prev.filter(s => !selectedIds.includes(s.id!)));
+            setStudentList((prev) => prev.filter((s) => !selectedIds.includes(s.id!)));
             toast.success('Selected students deleted!');
             setRowSelection({});
+            setShowBulkDeleteModal(false);
         } catch (err) {
             console.error('Bulk delete error:', err);
             toast.error('Failed to delete selected students ❌');
@@ -188,83 +195,100 @@ export default function StudentIndex() {
     };
 
     // Table columns
-    const columns: ColumnDef<Student>[] = React.useMemo(() => [
-        {
-            id: 'select',
-            header: ({ table }) => (
-                <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    checked={table.getIsAllPageRowsSelected()}
-                    onChange={table.getToggleAllPageRowsSelectedHandler()}
-                />
-            ),
-            cell: ({ row }) => (
-                <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    checked={row.getIsSelected()}
-                    onChange={row.getToggleSelectedHandler()}
-                />
-            ),
-        },
-        {
-            accessorKey: 'student_number',
-            header: 'STUDENT NUMBER',
-        },
-        {
-            accessorKey: 'student_name',
-            header: 'STUDENT FULL NAME',
-        },
-        {
-            accessorKey: 'email',
-            header: 'EMAIL',
-        },
-        {
-            id: 'actions',
-            header: 'Action',
-            enableHiding: false,
-            cell: ({ row }) => {
-                const student = row.original;
-                
-                return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => {
-                                    setEditId(student.id!);
-                                    setData({
-                                        id: student.id?.toString() || '',
-                                        student_number: student.student_number,
-                                        student_name: student.student_name,
-                                        email: student.email || '',
-                                    });
-                                    setShowModal(true);
-                                }}
-                            >
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                                className="text-red-600 cursor-pointer" 
-                                onClick={() => student.id && handleDelete(student.id)}
-                            >
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                );
+    const columns: ColumnDef<Student>[] = React.useMemo(
+        () => [
+            {
+                id: 'select',
+                header: ({ table }) => (
+                    <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={table.getIsAllPageRowsSelected()}
+                        onChange={table.getToggleAllPageRowsSelectedHandler()}
+                    />
+                ),
+                cell: ({ row }) => (
+                    <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={row.getIsSelected()}
+                        onChange={row.getToggleSelectedHandler()}
+                    />
+                ),
             },
-        },
-    ], []);
+            {
+                accessorKey: 'student_number',
+                header: 'STUDENT NUMBER',
+            },
+            {
+                accessorKey: 'student_name',
+                header: 'STUDENT FULL NAME',
+            },
+            {
+                accessorKey: 'email',
+                header: 'EMAIL',
+            },
+            {
+                accessorKey: 'year',
+                header: 'YEAR',
+            },
+            {
+                id: 'actions',
+                header: 'Action',
+                enableHiding: false,
+                cell: ({ row }) => {
+                    const student = row.original;
+
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                        setEditId(student.id!);
+                                        setData({
+                                            id: student.id?.toString() || '',
+                                            student_number: student.student_number,
+                                            student_name: student.student_name,
+                                            email: student.email || '',
+                                            year: student.year?.toString() || new Date().getFullYear().toString(),
+                                        });
+                                        setShowModal(true);
+                                    }}
+                                >
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="cursor-pointer text-red-600"
+                                    onClick={() => {
+                                        setDeleteId(student.id!);
+                                        setShowDeleteModal(true);
+                                    }}
+                                >
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            },
+        ],
+        [],
+    );
+    const columnFilters = React.useMemo(() => {
+        if (yearFilter && yearFilter !== 'all' && yearFilter !== 'unknown') {
+            return [{ id: 'year', value: Number(yearFilter) }];
+        }
+        return [];
+    }, [yearFilter]);
 
     // React Table setup
     const table = useReactTable({
@@ -275,12 +299,18 @@ export default function StudentIndex() {
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         onRowSelectionChange: setRowSelection,
+
         enableRowSelection: true,
-        state: { rowSelection, globalFilter },
+        state: {
+            rowSelection,
+            globalFilter,
+            columnFilters,
+        },
+
         globalFilterFn: (row, columnId, filterValue) => {
             const search = filterValue.toLowerCase();
             const student = row.original;
-            
+
             return (
                 student.student_number.toLowerCase().includes(search) ||
                 student.student_name.toLowerCase().includes(search) ||
@@ -289,10 +319,24 @@ export default function StudentIndex() {
         },
     });
 
+    // ✅ Extract years dynamically
+    const years = React.useMemo(() => {
+        const uniqueYears = Array.from(new Set(studentList.map((s) => s.year).filter((y) => y != null))).sort((a, b) => Number(b) - Number(a));
+        return uniqueYears;
+    }, [studentList]);
+
     const selectedCount = table.getSelectedRowModel().rows.length;
-    const currentData = selectedCount > 0 
-        ? table.getSelectedRowModel().rows.map(r => r.original)
-        : studentList;
+    const currentData = React.useMemo(() => {
+        if (selectedCount > 0) {
+            return table.getSelectedRowModel().rows.map((r) => r.original);
+        }
+
+        if (yearFilter && yearFilter !== 'all' && yearFilter !== 'unknown') {
+            return table.getFilteredRowModel().rows.map((r) => r.original);
+        }
+
+        return studentList;
+    }, [selectedCount, table, yearFilter, studentList]);
 
     return (
         <div className="w-full p-6">
@@ -300,8 +344,8 @@ export default function StudentIndex() {
 
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Student Management</h1>
-                <p className="text-gray-600 mt-2">Manage your student records and communications</p>
+                <h1 className="text-3xl font-bold">Student Management</h1>
+                <p className="mt-2">Manage your student records and communications</p>
             </div>
 
             {/* Controls */}
@@ -309,7 +353,7 @@ export default function StudentIndex() {
                 {/* Left controls */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                         <Input
                             placeholder="Search students..."
                             value={globalFilter}
@@ -317,7 +361,24 @@ export default function StudentIndex() {
                             className="max-w-xs pl-10"
                         />
                     </div>
-                    
+
+                    {/* Year Filter */}
+                    <div className="flex items-center gap-2">
+                        <Select value={yearFilter} onValueChange={setYearFilter}>
+                            <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Filter by Year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Years</SelectItem>
+                                {years.map((y) => (
+                                    <SelectItem key={y ?? 'unknown'} value={y ? y.toString() : 'unknown'}>
+                                        {y ?? 'Unknown'}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button className="gap-2">
@@ -326,7 +387,7 @@ export default function StudentIndex() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-48">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                                 className="cursor-pointer gap-2"
                                 onClick={() => {
                                     reset();
@@ -337,21 +398,14 @@ export default function StudentIndex() {
                                 <PlusIcon className="h-4 w-4" />
                                 Add Student
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                                className="cursor-pointer gap-2"
-                                onClick={() => setShowUploadModal(true)}
-                            >
+                            <DropdownMenuItem className="cursor-pointer gap-2" onClick={() => setShowUploadModal(true)}>
                                 <FileUp className="h-4 w-4 text-blue-500" />
                                 Import Excel
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-{selectedCount > 0 && (
-                        <Button
-                            variant="destructive"
-                            onClick={handleBulkDelete}
-                            className="gap-2"
-                        >
+                    {selectedCount > 0 && (
+                        <Button variant="destructive" onClick={() => setShowBulkDeleteModal(true)} className="gap-2">
                             <Trash className="h-4 w-4" />
                             Delete({selectedCount})
                         </Button>
@@ -360,28 +414,23 @@ export default function StudentIndex() {
 
                 {/* Right controls */}
                 <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => exportToExcel(currentData)}
-                        className="gap-2"
-                    >
+                    <Button variant="outline" onClick={() => exportToExcel(currentData)} className="gap-2">
                         <DownloadCloudIcon className="h-4 w-4 text-green-500" />
                         Export Excel
                     </Button>
-                    
-                    <SendEmailToSelected selectedStudents={table.getSelectedRowModel().rows.map(r => r.original)} />
-                    
+
+                    <SendEmailToSelected selectedStudents={currentData} />
                 </div>
             </div>
 
             {/* Table Container */}
-            <div className="rounded-lg border bg-white shadow-sm">
+            <div className="rounded-lg border shadow-sm">
                 <Table>
-                    <TableHeader className="bg-gray-50">
+                    <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="font-semibold text-gray-900">
+                                    <TableHead key={header.id} className="font-semibold">
                                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
@@ -391,17 +440,15 @@ export default function StudentIndex() {
                     <TableBody>
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id} className="hover:bg-gray-50">
+                                <TableRow key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
+                                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                     ))}
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="text-center py-8 text-gray-500">
+                                <TableCell colSpan={columns.length} className="py-8 text-center text-gray-500">
                                     No students found. Add some students to get started.
                                 </TableCell>
                             </TableRow>
@@ -416,22 +463,10 @@ export default function StudentIndex() {
                     Showing {table.getRowModel().rows.length} of {studentList.length} students
                 </div>
                 <div className="flex gap-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => table.previousPage()} 
-                        disabled={!table.getCanPreviousPage()}
-                        className="gap-1"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="gap-1">
                         Previous
                     </Button>
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => table.nextPage()} 
-                        disabled={!table.getCanNextPage()}
-                        className="gap-1"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="gap-1">
                         Next
                     </Button>
                 </div>
@@ -444,11 +479,7 @@ export default function StudentIndex() {
                         <DialogTitle className="text-xl">{editId ? 'Edit Student' : 'Add New Student'}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmitStudent} className="space-y-4">
-                        <Input 
-                            type="hidden" 
-                            value={data.id} 
-                            onChange={(e) => setData('id', e.target.value)} 
-                        />
+                        <Input type="hidden" value={data.id} onChange={(e) => setData('id', e.target.value)} />
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Student Number</label>
                             <Input
@@ -469,16 +500,27 @@ export default function StudentIndex() {
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Email (Optional)</label>
-                            <Input 
-                                type="email" 
-                                placeholder="Enter email address" 
-                                value={data.email} 
-                                onChange={(e) => setData('email', e.target.value)} 
+                            <Input
+                                type="email"
+                                placeholder="Enter email address"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Year</label>
+                            <Input
+                                type="number"
+                                min="2022"
+                                max={new Date().getFullYear()}
+                                value={data.year}
+                                onChange={(e) => setData('year', e.target.value)}
+                                required
                             />
                         </div>
 
                         <DialogFooter className="gap-2 sm:gap-0">
-                            <Button 
+                            <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => {
@@ -511,18 +553,12 @@ export default function StudentIndex() {
                                 accept=".xlsx, .xls"
                                 onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
                                 required
-                                className="w-full rounded-md border border-gray-300 p-3 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                className="w-full rounded-md border border-gray-300 p-3 file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            <p className="text-sm text-gray-500">
-                                Supported formats: .xlsx, .xls
-                            </p>
+                            <p className="text-sm text-gray-500">Supported formats: .xlsx, .xls</p>
                         </div>
                         <DialogFooter className="gap-2 sm:gap-0">
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                onClick={() => setShowUploadModal(false)}
-                            >
+                            <Button type="button" variant="outline" onClick={() => setShowUploadModal(false)}>
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={!excelFile}>
@@ -531,6 +567,44 @@ export default function StudentIndex() {
                             </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Single Delete Confirmation Modal */}
+            <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl">Confirm Deletion</DialogTitle>
+                        <DialogDescription>Are you sure you want to delete this student? This action cannot be undone.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button type="button" variant="outline" onClick={() => setShowDeleteModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={handleDelete}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Delete Confirmation Modal */}
+            <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl">Confirm Bulk Deletion</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete {selectedCount} selected students? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button type="button" variant="outline" onClick={() => setShowBulkDeleteModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={handleBulkDelete}>
+                            Delete {selectedCount} Students
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

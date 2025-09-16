@@ -154,7 +154,7 @@ class JobPostController extends Controller
 
         foreach ($unemployedAlumni as $alumni) {
             try {
-                Mail::to($alumni->email)->send(new JobNotificationMail($job));
+                Mail::to($alumni->email)->queue(new JobNotificationMail($job));
             } catch (\Exception $e) {
                 \Log::error('Mail failed: ' . $e->getMessage());
             }

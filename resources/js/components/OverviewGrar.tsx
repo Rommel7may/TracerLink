@@ -72,7 +72,7 @@ export function GraduatesLineChart() {
   const peakYear = data.length > 0 ? data.reduce((max, item) => item.total > max.total ? item : max, data[0]) : null
 
   return (
-    <Card className="w-full rounded-xl border shadow-sm bg-background text-foreground">
+    <Card className="w-full rounded-xl border-0 shadow-sm bg-background text-foreground">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
@@ -105,15 +105,15 @@ export function GraduatesLineChart() {
           <div className="space-y-6">
             {/* Summary Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-blue-50 rounded-lg p-3 text-center">
+              <div className="bg-blue-300/10 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-blue-700">{totalGraduates}</div>
                 <div className="text-xs text-blue-600">Total Responses</div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-gray-700">{data.length}</div>
-                <div className="text-xs text-gray-600">Years Tracked</div>
+              <div className="bg-gray-300/10 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold ">{data.length}</div>
+                <div className="text-xs ">Years Tracked</div>
               </div>
-              <div className="bg-green-50 rounded-lg p-3 text-center">
+              <div className="bg-green-300/10 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-green-700">{averagePerYear}</div>
                 <div className="text-xs text-green-600">Avg per Year</div>
               </div>

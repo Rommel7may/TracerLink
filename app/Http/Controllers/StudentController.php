@@ -21,12 +21,9 @@ class StudentController extends Controller
         ]);
     }
 
-
-        public function getAllStudents()
+    public function getAllStudents()
     {
-        $students = Student::all();
-
-        return $students;
+        return Student::all();
     }
 
     /**
@@ -37,12 +34,12 @@ class StudentController extends Controller
         $validated = $request->validate([
             'student_number' => 'required|string|unique:students',
             'student_name'   => 'required|string|max:255',
-            'email' => 'required|email|unique:students',
+            'email'          => 'required|email|unique:students',
+            'year'           => 'required|integer|min:2022|max:' . date('Y'), // ✅ limit from 2022-current year
         ]);
 
         $student = Student::create($validated);
 
-        // ✅ For Inertia redirect or Axios JSON response
         if ($request->wantsJson()) {
             return response()->json($student);
         }
@@ -58,7 +55,8 @@ class StudentController extends Controller
         $validated = $request->validate([
             'student_number' => 'required|string|unique:students,student_number,' . $student->id,
             'student_name'   => 'required|string|max:255',
-            'email' => 'email|unique:students,email,' . $student->id,
+            'email'          => 'nullable|email|unique:students,email,' . $student->id,
+            'year'           => 'required|integer|min:2022|max:' . date('Y'),
         ]);
 
         $student->update($validated);
@@ -75,61 +73,72 @@ class StudentController extends Controller
 
         return response()->json(['success' => true]);
     }
-    
-public function import(Request $request)
-{
-    $request->validate([
-        'file' => 'required|file',
-    ]);
 
-    // Student::truncate(); 
+    /**
+     * Import students from Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file',
+        ]);
 
-    $file = $request->file('file');
-    $spreadsheet = IOFactory::load($file->getPathname());
-    $sheet = $spreadsheet->getActiveSheet();
-    $rows = $sheet->toArray();
+        $file = $request->file('file');
+        $spreadsheet = IOFactory::load($file->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
 
-    $inserted = 0;
+        $inserted = 0;
 
-    foreach ($rows as $row) {
-    $student_number = trim($row[0] ?? '');
-    $student_name   = trim($row[1] ?? '');
-    $email          = trim($row[2] ?? '');
-    $program        = trim($row[3] ?? '');
+        foreach ($rows as $row) {
+            $student_number = trim($row[0] ?? '');
+            $student_name   = trim($row[1] ?? '');
+            $email          = trim($row[2] ?? '');
+            $program        = trim($row[3] ?? '');
+            $year           = trim($row[4] ?? ''); // ✅ column 5 as Year (optional depende sa file)
 
-    foreach ($row as $cell) {
-        $cell = trim($cell);
-        if (filter_var($cell, FILTER_VALIDATE_EMAIL)) {
-            $email = $cell;
-            break; // stop at first valid email
+            // detect email kahit saan column
+            foreach ($row as $cell) {
+                $cell = trim($cell);
+                if (filter_var($cell, FILTER_VALIDATE_EMAIL)) {
+                    $email = $cell;
+                    break;
+                }
+            }
+
+            // skip invalid rows
+            if (!$student_number || !is_numeric($student_number) || !$student_name) continue;
+            if (Student::where('student_number', $student_number)->exists()) continue;
+
+            // fallback year kung empty → current year
+            $year = ($year && is_numeric($year)) ? (int)$year : date('Y');
+            if ($year < 2022 || $year > date('Y')) {
+                $year = date('Y');
+            }
+
+            Student::create([
+                'student_number' => $student_number,
+                'student_name'   => $student_name,
+                'email'          => $email ?: null,
+                'program'        => $program ?: null,
+                'year'           => $year,
+            ]);
+
+            $inserted++;
         }
+
+        return redirect()->route('students.index')
+            ->with('success', "{$inserted} students imported successfully!");
     }
 
-    if (!$student_number || !$student_name) continue;
+    /**
+     * Bulk delete.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        Student::whereIn('id', $ids)->delete();
 
-    // Skip invalid rows: empty or non-numeric student number
-    if (!$student_number || !is_numeric($student_number) || !$student_name) continue;
-
-    // Avoid duplicates
-    if (Student::where('student_number', $student_number)->exists()) continue;
-
-    // Insert
-    Student::create([
-        'student_number' => $student_number,
-        'student_name'   => $student_name,
-        'email'          => $email ?: null,
-        'program'        => $program ?: null,
-    ]);
+        return response()->json(['message' => 'Students deleted successfully']);
     }
-    return Inertia::render($inserted);
-}
-
-
-public function bulkDelete(Request $request)
-{
-    $ids = $request->input('ids', []);
-    Student::whereIn('id', $ids)->delete();
-
-    return response()->json(['message' => 'Students deleted successfully']);
-}
 }

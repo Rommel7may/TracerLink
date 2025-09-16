@@ -72,6 +72,14 @@ export default function JobPost() {
         show_upcoming: filters.show_upcoming || false,
     });
     
+    // Confirmation modals state
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [emailJobId, setEmailJobId] = useState<number | null>(null);
+    const [showAllEmployedModal, setShowAllEmployedModal] = useState(false);
+    
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -111,14 +119,14 @@ export default function JobPost() {
             toast.error('No jobs selected');
             return;
         }
-        if (confirm(`Are you sure you want to delete ${selectedJobs.length} jobs?`)) {
-            selectedJobs.forEach((id) =>
-                destroy(route('job-posts.destroy', { job_post: id }), {
-                    onSuccess: () => toast.success(`Job ${id} deleted`),
-                })
-            );
-            setSelectedJobs([]);
-        }
+        
+        selectedJobs.forEach((id) =>
+            destroy(route('job-posts.destroy', { job_post: id }), {
+                onSuccess: () => toast.success(`Job ${id} deleted`),
+            })
+        );
+        setSelectedJobs([]);
+        setShowBulkDeleteModal(false);
     };
 
     const {
@@ -240,40 +248,56 @@ export default function JobPost() {
     };
 
     // Handle delete
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure?')) {
-            destroy(route('job-posts.destroy', { job_post: id }), {
-                onSuccess: () => toast.success('Job post deleted'),
-            });
-        }
+    const handleDelete = () => {
+        if (!deleteId) return;
+        
+        destroy(route('job-posts.destroy', { job_post: deleteId }), {
+            onSuccess: () => {
+                toast.success('Job post deleted');
+                setShowDeleteModal(false);
+                setDeleteId(null);
+            },
+        });
     };
 
     // Send email to unemployed alumni by program
-    const sendEmail = (jobId: number) => {
+    const sendEmail = () => {
         if (!selectedProgram) {
             toast.error('Please select a program before sending.');
             return;
         }
 
-        if (confirm('Send this job to unemployed alumni in the selected program?')) {
-            axios
-                .post(route('job-posts.send-email'), {
-                    job_id: jobId,
-                    program_id: selectedProgram,
-                })
-                .then(() => toast.success('Emails sent successfully'))
-                .catch(() => toast.error('No Unemployed found in this program'));
-        }
+        if (!emailJobId) return;
+
+        axios
+            .post(route('job-posts.send-email'), {
+                job_id: emailJobId,
+                program_id: selectedProgram,
+            })
+            .then(() => {
+                toast.success('Emails sent successfully');
+                setShowEmailModal(false);
+                setEmailJobId(null);
+            })
+            .catch(() => {
+                toast.error('No Unemployed found in this program');
+                setShowEmailModal(false);
+                setEmailJobId(null);
+            });
     };
 
     // Send email to all employed alumni
     const sendEmailToAllEmployed = () => {
-        if (confirm('Send email to ALL employed alumni?')) {
-            axios
-                .post(route('job-posts.send-email-to-all-employed'))
-                .then(() => toast.success('Emails sent to all employed alumni!'))
-                .catch(() => toast.error('Failed to send emails.'));
-        }
+        axios
+            .post(route('job-posts.send-email-to-all-employed'))
+            .then(() => {
+                toast.success('Emails sent to all employed alumni!');
+                setShowAllEmployedModal(false);
+            })
+            .catch(() => {
+                toast.error('Failed to send emails.');
+                setShowAllEmployedModal(false);
+            });
     };
 
     // Check if job is currently active based on date range and status
@@ -355,7 +379,7 @@ export default function JobPost() {
                     <Button onClick={openAdd} className="sm:w-auto">
                         Add Job Post
                     </Button>
-                    <Button variant="secondary" onClick={sendEmailToAllEmployed} className="sm:w-auto">
+                    <Button variant="secondary" onClick={() => setShowAllEmployedModal(true)} className="sm:w-auto">
                         <Send className="mr-2 h-4 w-4" />
                         Send to All Employed
                     </Button>
@@ -486,6 +510,7 @@ export default function JobPost() {
                                 onChange={(e) => setData('description', e.target.value)} 
                                 required 
                                 rows={4}
+                                className="w-116"
                             />
                         </div>
                         
@@ -636,24 +661,26 @@ export default function JobPost() {
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
+                                {/* <div>
                                     <Label className="font-semibold">Posted Date</Label>
                                     <p>{formatDate(viewJob.posted_date)}</p>
-                                </div>
+                                </div> */}
                                 
-                                <div>
-                                    <Label className="font-semibold">Application Deadline</Label>
-                                    <p>{formatDate(viewJob.application_deadline)}</p>
-                                    {isJobExpired(viewJob) && (
-                                        <span className="text-xs text-red-500">(Expired)</span>
-                                    )}
-                                </div>
+                               
                                 
                                 <div>
                                     <Label className="font-semibold">Start Date</Label>
                                     <p>{formatDate(viewJob.start_date)}</p>
                                     {isJobUpcoming(viewJob) && (
                                         <span className="text-xs text-blue-500">(Upcoming)</span>
+                                    )}
+                                </div>
+
+                                 <div>
+                                    <Label className="font-semibold">Application Deadline</Label>
+                                    <p>{formatDate(viewJob.application_deadline)}</p>
+                                    {isJobExpired(viewJob) && (
+                                        <span className="text-xs text-red-500">(Expired)</span>
                                     )}
                                 </div>
                             </div>
@@ -695,6 +722,87 @@ export default function JobPost() {
                 </DialogContent>
             </Dialog>
 
+            {/* Confirmation Modals */}
+            {/* Delete Confirmation Modal */}
+            <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete this job post? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Delete Confirmation Modal */}
+            <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Confirm Bulk Deletion</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete {selectedJobs.length} selected job posts? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowBulkDeleteModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleBulkDelete}>
+                            Delete {selectedJobs.length} Jobs
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Email Confirmation Modal */}
+            <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Send Job to Unemployed Alumni</DialogTitle>
+                        <DialogDescription>
+                            Send this job posting to unemployed alumni in the selected program?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowEmailModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={sendEmail}>
+                            Send Email
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* All Employed Email Confirmation Modal */}
+            <Dialog open={showAllEmployedModal} onOpenChange={setShowAllEmployedModal}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Send to All Employed Alumni</DialogTitle>
+                        <DialogDescription>
+                            Send email to ALL employed alumni? This will notify them about available job postings.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowAllEmployedModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={sendEmailToAllEmployed}>
+                            Send to All Employed
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* Program Selector Card */}
             <Card>
                 <CardHeader className="pb-3">
@@ -706,12 +814,12 @@ export default function JobPost() {
                 <CardContent>
                     <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                         <div className="flex-1">
-                            <Label className="mb-1 block font-medium">Select Program</Label>
+                            <Label className="mb-1 block font-medium">Select the program whose alumni you want to reach with this job.</Label>
                             <Select
                                 value={selectedProgram.toString()}
                                 onValueChange={(val) => setSelectedProgram(val ? Number(val) : '')}
                             >
-                                <SelectTrigger className="w-md">
+                                <SelectTrigger className="w-full lg:max-w-sm">
                                     <SelectValue placeholder="Select a program" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -725,7 +833,7 @@ export default function JobPost() {
                         </div>
                         
                         {selectedJobs.length > 0 && (
-                            <Button variant="destructive" onClick={handleBulkDelete} className="sm:w-auto">
+                            <Button variant="destructive" onClick={() => setShowBulkDeleteModal(true)} className="sm:w-auto">
                                 <Trash className="mr-2 h-4 w-4" />
                                 Delete Selected ({selectedJobs.length})
                             </Button>
@@ -820,13 +928,19 @@ export default function JobPost() {
                                                     <Button variant="ghost" size="icon" onClick={() => openEdit(job)} title="Edit">
                                                         <FilePenLine className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(job.id)} title="Delete">
+                                                    <Button variant="ghost" size="icon" onClick={() => {
+                                                        setDeleteId(job.id);
+                                                        setShowDeleteModal(true);
+                                                    }} title="Delete">
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                     <Button 
                                                         size="sm" 
                                                         variant="outline" 
-                                                        onClick={() => sendEmail(job.id)}
+                                                        onClick={() => {
+                                                            setEmailJobId(job.id);
+                                                            setShowEmailModal(true);
+                                                        }}
                                                         disabled={!isActive || !selectedProgram}
                                                         title={!selectedProgram ? "Select a program first" : "Send to unemployed alumni"}
                                                         className="gap-1"

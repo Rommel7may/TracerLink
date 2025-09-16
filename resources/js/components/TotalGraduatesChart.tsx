@@ -113,15 +113,15 @@ export default function TotalGraduatesChart({ programId, year }: Props) {
           <div className="space-y-4">
             {/* Summary Stats */}
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="bg-blue-50 rounded-lg p-3">
+              <div className="shadow-accent bg-blue-300/10 rounded-lg p-3">
                 <div className="text-2xl font-bold text-blue-700">{totalGraduates}</div>
-                <div className="text-xs text-blue-600">Total Graduates</div>
+                <div className="text-xs text-blue-600">Total Responses</div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-gray-700">{data.length}</div>
-                <div className="text-xs text-gray-600">Years Tracked</div>
+              <div className="shadow-accent bg-gray-300/10 rounded-lg p-3">
+                <div className="text-2xl font-bold ">{data.length}</div>
+                <div className="text-xs">Years Tracked</div>
               </div>
-              <div className="bg-green-50 rounded-lg p-3">
+              <div className="shadow-accent bg-green-300/10 rounded-lg p-3">
                 <div className="text-2xl font-bold text-green-700">{averagePerYear}</div>
                 <div className="text-xs text-green-600">Avg per Year</div>
               </div>

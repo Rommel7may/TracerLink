@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { AlertCircle, CheckCircle, Loader2, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -102,9 +102,9 @@ export const AlumniForm = memo(function AlumniForm({
 
     const { data, setData, post, put, processing, reset, errors } = useForm({
         id: id || undefined,
-        student_number: isEditing ? (student_number || '') : '',
+        student_number: isEditing ? student_number || '' : '',
 
-        email: isEditing ? (email || '') : '',
+        email: isEditing ? email || '' : '',
         program_id: program_id ? String(program_id) : '',
         last_name: last_name || '',
         given_name: given_name || '',
@@ -331,15 +331,14 @@ export const AlumniForm = memo(function AlumniForm({
                             <h3 className="border-b pb-2 text-xl font-semibold text-foreground">Basic Information</h3>
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <FieldWrapper label="Student Number" required error={errors.student_number}>
-    <Input
-        className={`h-11 ${errors.student_number ? 'border-red-500' : ''}`}
-        value={data.student_number}
-        onChange={handleInputChange('student_number')}
-        disabled={processing || isEditing} // ✅ disable kapag edit mode
-        placeholder="e.g., 2020-12345"
-    />
-</FieldWrapper>
-
+                                    <Input
+                                        className={`h-11 ${errors.student_number ? 'border-red-500' : ''}`}
+                                        value={data.student_number}
+                                        onChange={handleInputChange('student_number')}
+                                        disabled={processing || isEditing} // ✅ disable kapag edit mode
+                                        placeholder="e.g., 2020-12345"
+                                    />
+                                </FieldWrapper>
 
                                 <FieldWrapper label="Email" required error={errors.email}>
                                     <Input
@@ -581,7 +580,12 @@ export const AlumniForm = memo(function AlumniForm({
                         <div className="space-y-4">
                             <h3 className="border-b pb-2 text-xl font-semibold text-foreground">Feedback</h3>
                             <FieldWrapper label="Rate Your Instruction (1-5 stars)" error={errors.instruction_rating}>
-                                <StarRating value={data.instruction_rating || 0} onChange={handleRatingChange} />
+                                <StarRating
+                                    value={data.instruction_rating || 0}
+                                    onChange={handleRatingChange}
+                                    disabled={isEditing} // ✅ Disable when editing
+                                    error={errors.instruction_rating}
+                                />
                             </FieldWrapper>
                         </div>
 
