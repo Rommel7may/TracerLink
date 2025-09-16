@@ -33,6 +33,7 @@ Route::get('/', function(){
     return redirect()->route('login');
 })->name('home');
 
+//hehehe
 
 // 📝 Public Alumni Form
 Route::get('/alumni-form/{student_number}', [AlumniFormController::class, 'show'])->name('alumni.form');
