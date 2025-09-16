@@ -1,5 +1,5 @@
 <?php
-use Illuminate\Support\Facades\Mail;
+
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\{
@@ -28,12 +28,11 @@ use App\Http\Controllers\{
 };
 
 // 🌐 Public Welcome Page
-Route::get('/', fn () => Inertia::render('welcome'))->name('home');
-// Route::get('/', function(){
-//     return redirect()->route('login');
-// })->name('home');
+// Route::get('/', fn () => Inertia::render('welcome'))->name('home');
+Route::get('/', function(){
+    return redirect()->route('login');
+})->name('home');
 
-//hehehe
 
 // 📝 Public Alumni Form
 Route::get('/alumni-form/{student_number}', [AlumniFormController::class, 'show'])->name('alumni.form');
@@ -178,19 +177,6 @@ Route::get('/api/programs', function() {
 
 Route::get('/programs', function () {
     return Program::select('id', 'name')->orderBy('name')->get();
-});
-
-
-Route::get('/test-mail', function () {
-    $data = ['message' => 'This is a test email!'];
-
-    Mail::send([], $data, function ($message) use ($data) {
-        $message->to('2022307038@pampangastateu.edu.ph') // replace with your email
-                ->subject('Test Email')
-                ->setBody('<h1>' . $data['message'] . '</h1>', 'text/html');
-    });
-
-    return 'Test email sent!';
 });
 
 // 🧩 Include extra route files
