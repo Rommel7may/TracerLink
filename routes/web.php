@@ -81,7 +81,10 @@ Route::get('/job-form/{alumni}', [JobFormController::class, 'show'])->name('job-
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // 📊 Dashboard Page
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', function () {
+    return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
     Route::get('/dashboard/program-counts', [DashboardController::class, 'programCounts'])->name('dashboard.program.counts');
 
     // 📧 Email Sending

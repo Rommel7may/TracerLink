@@ -411,14 +411,8 @@ export const AlumniForm = memo(function AlumniForm({
                                         placeholder="Contact Number"
                                     />
                                 </FieldWrapper>
-                            </div>
-                        </div>
 
-                        {/* Section: Academic */}
-                        <div className="space-y-4">
-                            <h3 className="border-b pb-2 text-xl font-semibold text-foreground">Academic Background</h3>
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                <FieldWrapper label="Sex" required error={errors.sex}>
+                                    <FieldWrapper label="Sex" required error={errors.sex}>
                                     <Select value={data.sex} onValueChange={handleSelectChange('sex')}>
                                         <SelectTrigger className={`h-11 ${errors.sex ? 'border-red-500' : ''}`}>
                                             <SelectValue placeholder="Sex" />
@@ -429,7 +423,14 @@ export const AlumniForm = memo(function AlumniForm({
                                         </SelectContent>
                                     </Select>
                                 </FieldWrapper>
+                            </div>
+                        </div>
 
+                        {/* Section: Academic */}
+                        <div className="space-y-4">
+                            <h3 className="border-b pb-2 text-xl font-semibold text-foreground">Academic Background</h3>
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        
                                 <FieldWrapper label="Program Taken" required error={errors.program_id}>
                                     <Select value={data.program_id || ''} onValueChange={handleSelectChange('program_id')}>
                                         <SelectTrigger className={`h-11 ${errors.program_id ? 'border-red-500' : ''}`}>
