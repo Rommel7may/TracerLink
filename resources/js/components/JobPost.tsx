@@ -12,7 +12,7 @@ import axios from 'axios';
 import React, { useState} from 'react';
 import { toast } from 'sonner';
 import { Label } from './ui/label';
-import { FilePenLine, Trash, Trash2, Eye, Calendar, Send, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FilePenLine, Trash, Trash2, Eye, Calendar, Send, Filter, ChevronLeft, ChevronRight, PlusIcon} from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, parseISO, isValid} from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -377,18 +377,18 @@ export default function JobPost() {
                 
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Button onClick={openAdd} className="sm:w-auto">
-                        Add Job Post
+                       <PlusIcon/> Add Job Post
                     </Button>
-                    <Button variant="secondary" onClick={() => setShowAllEmployedModal(true)} className="sm:w-auto">
+                    {/* <Button variant="secondary" onClick={() => setShowAllEmployedModal(true)} className="sm:w-auto">
                         <Send className="mr-2 h-4 w-4" />
                         Send to All Employed
-                    </Button>
+                    </Button> */}
                     <Popover open={dateFilterOpen} onOpenChange={setDateFilterOpen}>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" className="sm:w-auto">
+                            {/* <Button variant="outline" className="sm:w-auto">
                                 <Filter className="mr-2 h-4 w-4" />
                                 Filter
-                            </Button>
+                            </Button> */}
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                             <div className="space-y-4">
@@ -796,9 +796,9 @@ export default function JobPost() {
                         <Button variant="outline" onClick={() => setShowAllEmployedModal(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={sendEmailToAllEmployed}>
+                        {/* <Button onClick={sendEmailToAllEmployed}>
                             Send to All Employed
-                        </Button>
+                        </Button> */}
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
