@@ -18,8 +18,8 @@ createInertiaApp({
 
   resolve: (name) =>
     resolvePageComponent(
-      `./pages/${name}.tsx`,
-      import.meta.glob('./pages/**/*.tsx')
+      `./Pages/${name}.tsx`,
+      import.meta.glob('./Pages/**/*.tsx')
     ),
 
   setup({ el, App, props }) {
