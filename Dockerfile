@@ -17,8 +17,11 @@ COPY . .
 # Install PHP deps
 RUN composer install --no-interaction --prefer-dist
 
-# Copy supervisord config
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy supervisord config from root directory
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+
 
 EXPOSE 8000 5173
 
