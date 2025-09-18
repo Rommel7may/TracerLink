@@ -27,6 +27,9 @@ use App\Http\Controllers\{
     TestController,
 };
 
+
+use App\Events\TestEvent;
+
 // 🌐 Public Welcome Page
 // Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 Route::get('/', function(){
@@ -182,12 +185,6 @@ Route::get('/api/programs', function() {
 
 Route::get('/programs', function () {
     return Program::select('id', 'name')->orderBy('name')->get();
-});
-
-
-Route::get('/test', function () {
-    event(new \App\Events\TestEvent('Hello from Laravel!'));
-    return 'Event fired!';
 });
 
 
