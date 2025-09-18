@@ -73,7 +73,7 @@ class DashboardController extends Controller
             ->get();
 
         // ✅ Render dashboard with all data
-        return Inertia::render('Dashboard', [
+        return Inertia::render('dashboard', [
             'programs' => $programs,
             'alumniPerYear' => $alumniPerYear,
             'ratings' => $ratings,
