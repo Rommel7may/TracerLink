@@ -110,7 +110,7 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
         setLoginAttempts(newAttempts);
         localStorage.setItem('loginAttempts', newAttempts.toString());
         
-        if (newAttempts >= 5) {
+        if (newAttempts >= 3) {
           const lockUntil = Date.now() + 5 * 60 * 1000; // 5 minutes from now
           localStorage.setItem('lockTime', lockUntil.toString());
           setIsLocked(true);
