@@ -184,6 +184,13 @@ Route::get('/programs', function () {
     return Program::select('id', 'name')->orderBy('name')->get();
 });
 
+
+Route::get('/test', function () {
+    event(new \App\Events\TestEvent('Hello from Laravel!'));
+    return 'Event fired!';
+});
+
+
 // 🧩 Include extra route files
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
