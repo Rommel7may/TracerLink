@@ -34,6 +34,11 @@ Route::get('/', function(){
 })->name('home');
 
 
+Route::get('TestPage', function(){
+    return 'capital case is working';
+});
+
+
 // 📝 Public Alumni Form
 Route::get('/alumni-form/{student_number}', [AlumniFormController::class, 'show'])->name('alumni.form');
 Route::post('/alumni-form/{student_number}/submit', [AlumniFormController::class, 'store'])->name('alumni.store');
