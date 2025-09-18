@@ -1,7 +1,7 @@
 import { configureEcho } from '@laravel/echo-react';
 
 configureEcho({
-    broadcaster: 'reverb',
+    broadcaster: 'pusher',
 });
 import '../css/app.css'
 
