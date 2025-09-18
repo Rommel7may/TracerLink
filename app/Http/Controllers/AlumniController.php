@@ -18,7 +18,7 @@ class AlumniController extends Controller
             ->orderBy('graduation_year')
             ->get();
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('dashboard', [
             'alumniPerYear' => $alumniPerYear,
         ]);
     }

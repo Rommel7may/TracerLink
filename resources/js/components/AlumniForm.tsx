@@ -64,7 +64,7 @@ export const AlumniForm = memo(function AlumniForm({
     mode = 'create',
     id,
     student_number = '',
-    email = '',
+    email = '', 
     program_id = null,
     last_name = '',
     given_name = '',

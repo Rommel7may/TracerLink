@@ -39,7 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ]
 
-export default function Dashboard({
+export default function dashboard({
   programs,
   alumniPerYear,
   ratingCounts,
