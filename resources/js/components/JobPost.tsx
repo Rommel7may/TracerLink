@@ -9,14 +9,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { useForm, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import React, { useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Label } from './ui/label';
-import { FilePenLine, Trash, Trash2, Eye, Calendar, Send, Filter, ChevronLeft, ChevronRight, PlusIcon} from 'lucide-react';
+import { FilePenLine, Trash, Trash2, Eye, Calendar, Send, Filter, ChevronLeft, ChevronRight, PlusIcon, MapPin, LinkIcon, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, parseISO, isValid} from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Types
 interface Job {
@@ -25,6 +26,7 @@ interface Job {
     description: string;
     company_name: string;
     location?: string;
+    location_link?: string;
     requirements?: string;
     responsibilities?: string;
     apply_link?: string;
@@ -80,6 +82,16 @@ export default function JobPost() {
     const [emailJobId, setEmailJobId] = useState<number | null>(null);
     const [showAllEmployedModal, setShowAllEmployedModal] = useState(false);
     
+    // Loading states
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
+    const [isSendingToAllEmployed, setIsSendingToAllEmployed] = useState(false);
+    const [isApplyingFilters, setIsApplyingFilters] = useState(false);
+    
+    // Location input state - simplified approach
+    const [locationInputType, setLocationInputType] = useState<'text' | 'link'>('text');
+    
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -120,13 +132,26 @@ export default function JobPost() {
             return;
         }
         
-        selectedJobs.forEach((id) =>
-            destroy(route('job-posts.destroy', { job_post: id }), {
-                onSuccess: () => toast.success(`Job ${id} deleted`),
-            })
+        setIsBulkDeleting(true);
+        
+        // Create promises for all delete operations
+        const deletePromises = selectedJobs.map(id => 
+            destroy(route('job-posts.destroy', { job_post: id }))
         );
-        setSelectedJobs([]);
-        setShowBulkDeleteModal(false);
+        
+        // Wait for all delete operations to complete
+        Promise.all(deletePromises)
+            .then(() => {
+                toast.success(`${selectedJobs.length} job(s) deleted successfully`);
+                setSelectedJobs([]);
+                setShowBulkDeleteModal(false);
+            })
+            .catch(() => {
+                toast.error('Failed to delete some jobs');
+            })
+            .finally(() => {
+                setIsBulkDeleting(false);
+            });
     };
 
     const {
@@ -143,6 +168,7 @@ export default function JobPost() {
         description: '',
         company_name: '',
         location: '',
+        location_link: '',
         requirements: '',
         responsibilities: '',
         apply_link: '',
@@ -152,8 +178,18 @@ export default function JobPost() {
         start_date: '',
     });
 
+    // Clear the other location field when switching input types
+    useEffect(() => {
+        if (locationInputType === 'text') {
+            setData('location_link', '');
+        } else {
+            setData('location', '');
+        }
+    }, [locationInputType]);
+
     // Apply date filters
     const applyFilters = () => {
+        setIsApplyingFilters(true);
         get(route('job-posts.index', {
             start_date: dateFilter.start_date,
             end_date: dateFilter.end_date,
@@ -161,9 +197,14 @@ export default function JobPost() {
             show_expired: dateFilter.show_expired,
             show_active: dateFilter.show_active,
             show_upcoming: dateFilter.show_upcoming,
-        }));
-        setDateFilterOpen(false);
-        setCurrentPage(1); // Reset to first page when filters change
+        }), {
+            preserveState: true,
+            onFinish: () => {
+                setIsApplyingFilters(false);
+                setDateFilterOpen(false);
+                setCurrentPage(1); // Reset to first page when filters change
+            }
+        });
     };
 
     // Clear all filters
@@ -176,15 +217,22 @@ export default function JobPost() {
             show_active: false,
             show_upcoming: false,
         });
-        get(route('job-posts.index'));
-        setDateFilterOpen(false);
-        setCurrentPage(1); // Reset to first page when filters are cleared
+        setIsApplyingFilters(true);
+        get(route('job-posts.index'), {
+            preserveState: true,
+            onFinish: () => {
+                setIsApplyingFilters(false);
+                setDateFilterOpen(false);
+                setCurrentPage(1); // Reset to first page when filters are cleared
+            }
+        });
     };
 
     // Open add modal
     const openAdd = () => {
         reset();
         setEditId(null);
+        setLocationInputType('text');
         setOpen(true);
     };
 
@@ -195,6 +243,7 @@ export default function JobPost() {
             description: job.description,
             company_name: job.company_name,
             location: job.location || '',
+            location_link: job.location_link || '',
             requirements: job.requirements || '',
             responsibilities: job.responsibilities || '',
             apply_link: job.apply_link || '',
@@ -203,6 +252,14 @@ export default function JobPost() {
             application_deadline: job.application_deadline || '',
             start_date: job.start_date || '',
         });
+        
+        // Set the appropriate input type based on existing data
+        if (job.location_link) {
+            setLocationInputType('link');
+        } else {
+            setLocationInputType('text');
+        }
+        
         setEditId(job.id);
         setOpen(true);
     };
@@ -251,12 +308,16 @@ export default function JobPost() {
     const handleDelete = () => {
         if (!deleteId) return;
         
+        setIsDeleting(true);
         destroy(route('job-posts.destroy', { job_post: deleteId }), {
             onSuccess: () => {
                 toast.success('Job post deleted');
                 setShowDeleteModal(false);
                 setDeleteId(null);
             },
+            onFinish: () => {
+                setIsDeleting(false);
+            }
         });
     };
 
@@ -269,6 +330,7 @@ export default function JobPost() {
 
         if (!emailJobId) return;
 
+        setIsSendingEmail(true);
         axios
             .post(route('job-posts.send-email'), {
                 job_id: emailJobId,
@@ -283,11 +345,15 @@ export default function JobPost() {
                 toast.error('No Unemployed found in this program');
                 setShowEmailModal(false);
                 setEmailJobId(null);
+            })
+            .finally(() => {
+                setIsSendingEmail(false);
             });
     };
 
     // Send email to all employed alumni
     const sendEmailToAllEmployed = () => {
+        setIsSendingToAllEmployed(true);
         axios
             .post(route('job-posts.send-email-to-all-employed'))
             .then(() => {
@@ -297,6 +363,9 @@ export default function JobPost() {
             .catch(() => {
                 toast.error('Failed to send emails.');
                 setShowAllEmployedModal(false);
+            })
+            .finally(() => {
+                setIsSendingToAllEmployed(false);
             });
     };
 
@@ -366,6 +435,32 @@ export default function JobPost() {
         return new Date() < startDate;
     };
 
+    // Extract coordinates from Google Maps link
+    const extractCoordinatesFromLink = (link: string) => {
+        try {
+            const url = new URL(link);
+            if (url.hostname.includes('google.com') || url.hostname.includes('goo.gl')) {
+                // Handle different Google Maps URL formats
+                const match = url.pathname.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (match) {
+                    return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+                }
+                
+                // Try query parameters
+                const queryCoords = url.searchParams.get('q');
+                if (queryCoords) {
+                    const coords = queryCoords.split(',');
+                    if (coords.length === 2) {
+                        return { lat: parseFloat(coords[0]), lng: parseFloat(coords[1]) };
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error parsing Google Maps link:', e);
+        }
+        return null;
+    };
+
     return (
         <div className="space-y-6 p-6">
             {/* Header */}
@@ -377,7 +472,7 @@ export default function JobPost() {
                 
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Button onClick={openAdd} className="sm:w-auto">
-                       <PlusIcon/> Add Job Post
+                       <PlusIcon className="mr-2 h-4 w-4" /> Add Job Post
                     </Button>
                     {/* <Button variant="secondary" onClick={() => setShowAllEmployedModal(true)} className="sm:w-auto">
                         <Send className="mr-2 h-4 w-4" />
@@ -385,10 +480,14 @@ export default function JobPost() {
                     </Button> */}
                     <Popover open={dateFilterOpen} onOpenChange={setDateFilterOpen}>
                         <PopoverTrigger asChild>
-                            {/* <Button variant="outline" className="sm:w-auto">
-                                <Filter className="mr-2 h-4 w-4" />
+                            <Button variant="outline" className="sm:w-auto" disabled={isApplyingFilters}>
+                                {isApplyingFilters ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Filter className="mr-2 h-4 w-4" />
+                                )}
                                 Filter
-                            </Button> */}
+                            </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                             <div className="space-y-4">
@@ -467,10 +566,13 @@ export default function JobPost() {
                                 </div>
                                 
                                 <div className="flex gap-2">
-                                    <Button onClick={applyFilters} size="sm" className="flex-1">
+                                    <Button onClick={applyFilters} size="sm" className="flex-1" disabled={isApplyingFilters}>
+                                        {isApplyingFilters ? (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        ) : null}
                                         Apply Filters
                                     </Button>
-                                    <Button onClick={clearFilters} variant="outline" size="sm">
+                                    <Button onClick={clearFilters} variant="outline" size="sm" disabled={isApplyingFilters}>
                                         Clear
                                     </Button>
                                 </div>
@@ -514,9 +616,58 @@ export default function JobPost() {
                             />
                         </div>
                         
+                        {/* Location Input */}
                         <div>
                             <Label>Location</Label>
-                            <Input placeholder="Location" value={data.location} onChange={(e) => setData('location', e.target.value)} />
+                            <Tabs 
+                                value={locationInputType} 
+                                onValueChange={(val) => setLocationInputType(val as 'text' | 'link')}
+                                className="w-full"
+                            >
+                                <TabsList className="grid w-full grid-cols-2 mb-2">
+                                    <TabsTrigger value="text">
+                                        <MapPin className="h-4 w-4 mr-2" />
+                                        Type Location
+                                    </TabsTrigger>
+                                    <TabsTrigger value="link">
+                                        <LinkIcon className="h-4 w-4 mr-2" />
+                                        Google Maps Link
+                                    </TabsTrigger>
+                                </TabsList>
+                                
+                                <TabsContent value="text" className="space-y-2">
+                                    <Input 
+                                        placeholder="Enter location (e.g., 'New York, NY' or '123 Main St')" 
+                                        value={data.location} 
+                                        onChange={(e) => setData('location', e.target.value)}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Enter the physical location of the job
+                                    </p>
+                                </TabsContent>
+                                
+                                <TabsContent value="link" className="space-y-2">
+                                    <Input 
+                                        placeholder="Paste Google Maps link (e.g., https://goo.gl/maps/...)" 
+                                        value={data.location_link} 
+                                        onChange={(e) => setData('location_link', e.target.value)}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Paste a Google Maps link to provide precise location
+                                    </p>
+                                    {data.location_link && extractCoordinatesFromLink(data.location_link) && (
+                                        <div className="text-xs text-green-600 flex items-center">
+                                            <MapPin className="h-3 w-3 mr-1" />
+                                            Valid Google Maps link detected
+                                        </div>
+                                    )}
+                                    {data.location_link && !extractCoordinatesFromLink(data.location_link) && (
+                                        <div className="text-xs text-amber-600">
+                                            This doesn't appear to be a valid Google Maps link
+                                        </div>
+                                    )}
+                                </TabsContent>
+                            </Tabs>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -547,15 +698,6 @@ export default function JobPost() {
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <Label>Posted Date</Label>
-                                <Input 
-                                    type="date" 
-                                    value={data.posted_date} 
-                                    onChange={(e) => setData('posted_date', e.target.value)} 
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">When job was posted</p>
-                            </div>
                             
                             <div>
                                 <Label>Application Deadline</Label>
@@ -601,6 +743,9 @@ export default function JobPost() {
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>
+                                {processing ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : null}
                                 {editId ? 'Update' : 'Create'} Job Post
                             </Button>
                         </DialogFooter>
@@ -634,13 +779,30 @@ export default function JobPost() {
                             
                             <div>
                                 <Label className="font-semibold">Description</Label>
-                                <p className="whitespace-pre-line">{viewJob.description}</p>
+                                <p className="whitespace-pre-line break-all">{viewJob.description}</p>
                             </div>
                             
-                            {viewJob.location && (
+                            {(viewJob.location || viewJob.location_link) && (
                                 <div>
                                     <Label className="font-semibold">Location</Label>
-                                    <p>{viewJob.location}</p>
+                                    {viewJob.location_link ? (
+                                        <div className="mt-1">
+                                            <a 
+                                                href={viewJob.location_link} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline inline-flex items-center"
+                                            >
+                                                <MapPin className="h-4 w-4 mr-1" />
+                                                View on Google Maps
+                                            </a>
+                                            {viewJob.location && (
+                                                <p className="text-sm text-muted-foreground mt-1">{viewJob.location}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p>{viewJob.location}</p>
+                                    )}
                                 </div>
                             )}
                             
@@ -661,13 +823,8 @@ export default function JobPost() {
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* <div>
-                                    <Label className="font-semibold">Posted Date</Label>
-                                    <p>{formatDate(viewJob.posted_date)}</p>
-                                </div> */}
-                                
-                               
-                                
+                         
+
                                 <div>
                                     <Label className="font-semibold">Start Date</Label>
                                     <p>{formatDate(viewJob.start_date)}</p>
@@ -707,7 +864,7 @@ export default function JobPost() {
                                         href={viewJob.apply_link} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline block mt-1"
+                                        className="text-blue-600 hover:underline block mt-1 break-all"
                                     >
                                         {viewJob.apply_link}
                                     </a>
@@ -733,10 +890,13 @@ export default function JobPost() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+                        <Button variant="outline" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}>
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={handleDelete}>
+                        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                            {isDeleting ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
                             Delete
                         </Button>
                     </DialogFooter>
@@ -753,10 +913,13 @@ export default function JobPost() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowBulkDeleteModal(false)}>
+                        <Button variant="outline" onClick={() => setShowBulkDeleteModal(false)} disabled={isBulkDeleting}>
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={handleBulkDelete}>
+                        <Button variant="destructive" onClick={handleBulkDelete} disabled={isBulkDeleting}>
+                            {isBulkDeleting ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
                             Delete {selectedJobs.length} Jobs
                         </Button>
                     </DialogFooter>
@@ -773,10 +936,13 @@ export default function JobPost() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowEmailModal(false)}>
+                        <Button variant="outline" onClick={() => setShowEmailModal(false)} disabled={isSendingEmail}>
                             Cancel
                         </Button>
-                        <Button onClick={sendEmail}>
+                        <Button onClick={sendEmail} disabled={isSendingEmail || !selectedProgram}>
+                            {isSendingEmail ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
                             Send Email
                         </Button>
                     </DialogFooter>
@@ -793,12 +959,15 @@ export default function JobPost() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowAllEmployedModal(false)}>
+                        <Button variant="outline" onClick={() => setShowAllEmployedModal(false)} disabled={isSendingToAllEmployed}>
                             Cancel
                         </Button>
-                        {/* <Button onClick={sendEmailToAllEmployed}>
+                        <Button onClick={sendEmailToAllEmployed} disabled={isSendingToAllEmployed}>
+                            {isSendingToAllEmployed ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
                             Send to All Employed
-                        </Button> */}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -814,7 +983,7 @@ export default function JobPost() {
                 <CardContent>
                     <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                         <div className="flex-1">
-                            <Label className="mb-1 block font-medium">Select the program whose alumni you want to reach with this job.</Label>
+                            <Label className="mb-1 block font-medium">Which Program Alumni Should Receive This Job?</Label>
                             <Select
                                 value={selectedProgram.toString()}
                                 onValueChange={(val) => setSelectedProgram(val ? Number(val) : '')}
@@ -868,6 +1037,7 @@ export default function JobPost() {
                                 </TableHead>
                                 <TableHead>Title</TableHead>
                                 <TableHead>Company</TableHead>
+                                <TableHead>Location</TableHead>
                                 <TableHead>Deadline</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
@@ -876,7 +1046,7 @@ export default function JobPost() {
                         <TableBody>
                             {currentJobs.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24">
+                                    <TableCell colSpan={7} className="text-center h-24">
                                         No job posts found.
                                     </TableCell>
                                 </TableRow>
@@ -899,8 +1069,24 @@ export default function JobPost() {
                                             <TableCell className="font-medium">{job.title}</TableCell>
                                             <TableCell>{job.company_name}</TableCell>
                                             <TableCell>
+                                                {job.location_link ? (
+                                                    <a 
+                                                        href={job.location_link} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-600 hover:underline inline-flex items-center text-sm"
+                                                    >
+                                                        <MapPin className="h-3 w-3 mr-1" />
+                                                        Map Link
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-sm">{job.location || 'Not specified'}</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
                                                 <div className="flex flex-col">
                                                     <span>{formatDate(job.application_deadline)}</span>
+                                                   
                                                     {isExpired && (
                                                         <span className="text-xs text-red-500">Expired</span>
                                                     )}

@@ -37,10 +37,19 @@
 
     <!-- Job Info -->
     <div class="bg-blue-50 p-6 rounded-lg mx-6 mb-6">
-      <p><strong>Company:</strong> {{ $job->company_name }}</p>
-      @if($job->location)
-      <p><strong>Location:</strong> {{ $job->location }}</p>
-      @endif
+       <p><strong>Company:</strong> {{ $job->company_name }}</p>
+       
+@if($job->location)
+  <p><strong>Location:</strong>{{ $job->location }}</p>
+@endif
+
+@if($job->location_link)
+  <p><strong>Location:</strong>
+    <a href="{{ $job->location_link }}" target="_blank" class="text-blue-600 underline">
+      📍 View Location on Google Maps
+    </a>
+  </p>
+@endif
       @if($job->description)
       <p><strong>Description:</strong> {{ $job->description }}</p>
       @endif

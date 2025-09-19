@@ -13,6 +13,7 @@ class JobPost extends Model
         'description',
         'company_name',
         'location',
+        'location_link',
         'requirements',
         'responsibilities',
         'apply_link',
