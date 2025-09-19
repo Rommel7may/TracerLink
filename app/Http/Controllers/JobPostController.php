@@ -69,6 +69,7 @@ class JobPostController extends Controller
             'description' => 'required|string',
             'company_name' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
+            'location_link' => 'nullable|string|max:255',
             'requirements' => 'nullable|string',
             'responsibilities' => 'nullable|string',
             'apply_link' => 'nullable|string|max:255',
@@ -98,6 +99,7 @@ class JobPostController extends Controller
             'description' => 'required|string',
             'company_name' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
+            'location_link' => 'nullable|string|max:255',
             'requirements' => 'nullable|string',
             'responsibilities' => 'nullable|string',
             'apply_link' => 'nullable|string|max:255',
@@ -132,6 +134,7 @@ class JobPostController extends Controller
         ]);
 
         $job = JobPost::findOrFail($validated['job_id']);
+        
 
         // Only send emails for active jobs that haven't expired
         if (!$job->isActive()) {

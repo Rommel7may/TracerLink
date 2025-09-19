@@ -1,7 +1,6 @@
 'use client';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -26,7 +25,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import axios from 'axios';
-import { DownloadCloudIcon, FileUp, MoreHorizontal, PlusIcon, Search, Trash } from 'lucide-react';
+import { DownloadCloudIcon, FileUp, MoreHorizontal, PlusIcon, Search, Trash, Menu, X } from 'lucide-react';
 import * as React from 'react';
 import { toast, Toaster } from 'sonner';
 
@@ -57,6 +56,7 @@ export default function StudentIndex() {
     const [showDeleteModal, setShowDeleteModal] = React.useState(false);
     const [deleteId, setDeleteId] = React.useState<number | null>(null);
     const [showBulkDeleteModal, setShowBulkDeleteModal] = React.useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     const { data, setData, reset, processing } = useForm({
         id: '',
@@ -339,33 +339,45 @@ export default function StudentIndex() {
     }, [selectedCount, table, yearFilter, studentList]);
 
     return (
-        <div className="w-full p-6">
+        <div className="w-full p-4 sm:p-6">
             <Toaster position="top-right" richColors closeButton />
+
+            {/* Mobile Menu Button */}
+            <div className="block md:hidden mb-4">
+                <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="md:hidden"
+                >
+                    {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                </Button>
+            </div>
 
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold">Student Management</h1>
-                <p className="mt-2">Manage your student records and communications</p>
+                <h1 className="text-2xl sm:text-3xl font-bold">Student Management</h1>
+                <p className="mt-2 text-sm sm:text-base">Manage your student records and communications</p>
             </div>
 
             {/* Controls */}
             <div className="flex flex-col items-start justify-between gap-4 py-4 md:flex-row md:items-center">
                 {/* Left controls */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="relative">
+                <div className={`flex flex-wrap items-center gap-3 w-full md:w-auto ${isMobileMenuOpen ? 'block' : 'hidden md:flex'}`}>
+                    <div className="relative w-full md:w-auto">
                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                         <Input
                             placeholder="Search students..."
                             value={globalFilter}
                             onChange={(e) => setGlobalFilter(e.target.value)}
-                            className="max-w-xs pl-10"
+                            className="w-full pl-10 md:max-w-xs"
                         />
                     </div>
 
                     {/* Year Filter */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full md:w-auto">
                         <Select value={yearFilter} onValueChange={setYearFilter}>
-                            <SelectTrigger className="w-40">
+                            <SelectTrigger className="w-full md:w-40">
                                 <SelectValue placeholder="Filter by Year" />
                             </SelectTrigger>
                             <SelectContent>
@@ -381,9 +393,9 @@ export default function StudentIndex() {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="gap-2">
+                            <Button className="gap-2 w-full md:w-auto">
                                 <PlusIcon className="h-4 w-4" />
-                                New
+                                <span className="hidden sm:inline">New</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-48">
@@ -405,7 +417,7 @@ export default function StudentIndex() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                     {selectedCount > 0 && (
-                        <Button variant="destructive" onClick={() => setShowBulkDeleteModal(true)} className="gap-2">
+                        <Button variant="destructive" onClick={() => setShowBulkDeleteModal(true)} className="gap-2 w-full md:w-auto">
                             <Trash className="h-4 w-4" />
                             Delete({selectedCount})
                         </Button>
@@ -413,24 +425,27 @@ export default function StudentIndex() {
                 </div>
 
                 {/* Right controls */}
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" onClick={() => exportToExcel(currentData)} className="gap-2">
+                <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto mt-4 md:mt-0 ${isMobileMenuOpen ? 'block' : 'hidden md:flex'}`}>
+                    <Button variant="outline" onClick={() => exportToExcel(currentData)} className="gap-2 w-full sm:w-auto">
                         <DownloadCloudIcon className="h-4 w-4 text-green-500" />
-                        Export Excel
+                        <span className="hidden sm:inline">Export Excel</span>
+                        <span className="sm:hidden">Export</span>
                     </Button>
 
-                    <SendEmailToSelected selectedStudents={currentData} />
+                    <div className="w-full sm:w-auto">
+                        <SendEmailToSelected selectedStudents={currentData} />
+                    </div>
                 </div>
             </div>
 
             {/* Table Container */}
-            <div className="rounded-lg border shadow-sm">
+            <div className="rounded-lg border shadow-sm overflow-x-auto">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="font-semibold">
+                                    <TableHead key={header.id} className="font-semibold whitespace-nowrap">
                                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
@@ -442,7 +457,9 @@ export default function StudentIndex() {
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                        <TableCell key={cell.id} className="whitespace-nowrap">
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
                                     ))}
                                 </TableRow>
                             ))
@@ -458,7 +475,7 @@ export default function StudentIndex() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between py-4 gap-4">
                 <div className="text-sm text-gray-600">
                     Showing {table.getRowModel().rows.length} of {studentList.length} students
                 </div>
@@ -474,7 +491,7 @@ export default function StudentIndex() {
 
             {/* Add/Edit Modal */}
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-xl">{editId ? 'Edit Student' : 'Add New Student'}</DialogTitle>
                     </DialogHeader>
@@ -519,7 +536,7 @@ export default function StudentIndex() {
                             />
                         </div>
 
-                        <DialogFooter className="gap-2 sm:gap-0">
+                        <DialogFooter className="gap-2 sm:gap-0 flex flex-col sm:flex-row">
                             <Button
                                 type="button"
                                 variant="outline"
@@ -528,10 +545,11 @@ export default function StudentIndex() {
                                     setEditId(null);
                                     setShowModal(false);
                                 }}
+                                className="w-full sm:w-auto"
                             >
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={processing}>
+                            <Button type="submit" disabled={processing} className="w-full sm:w-auto">
                                 {editId ? 'Update Student' : 'Add Student'}
                             </Button>
                         </DialogFooter>
@@ -541,7 +559,7 @@ export default function StudentIndex() {
 
             {/* Excel Upload Modal */}
             <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-xl">Import Students from Excel</DialogTitle>
                     </DialogHeader>
@@ -557,11 +575,11 @@ export default function StudentIndex() {
                             />
                             <p className="text-sm text-gray-500">Supported formats: .xlsx, .xls</p>
                         </div>
-                        <DialogFooter className="gap-2 sm:gap-0">
-                            <Button type="button" variant="outline" onClick={() => setShowUploadModal(false)}>
+                        <DialogFooter className="gap-2 sm:gap-0 flex flex-col sm:flex-row">
+                            <Button type="button" variant="outline" onClick={() => setShowUploadModal(false)} className="w-full sm:w-auto">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={!excelFile}>
+                            <Button type="submit" disabled={!excelFile} className="w-full sm:w-auto">
                                 <FileUp className="mr-2 h-4 w-4" />
                                 Upload File
                             </Button>
@@ -572,16 +590,16 @@ export default function StudentIndex() {
 
             {/* Single Delete Confirmation Modal */}
             <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-xl">Confirm Deletion</DialogTitle>
                         <DialogDescription>Are you sure you want to delete this student? This action cannot be undone.</DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button type="button" variant="outline" onClick={() => setShowDeleteModal(false)}>
+                    <DialogFooter className="gap-2 sm:gap-0 flex flex-col sm:flex-row">
+                        <Button type="button" variant="outline" onClick={() => setShowDeleteModal(false)} className="w-full sm:w-auto">
                             Cancel
                         </Button>
-                        <Button type="button" variant="destructive" onClick={handleDelete}>
+                        <Button type="button" variant="destructive" onClick={handleDelete} className="w-full sm:w-auto">
                             Delete
                         </Button>
                     </DialogFooter>
@@ -590,18 +608,18 @@ export default function StudentIndex() {
 
             {/* Bulk Delete Confirmation Modal */}
             <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-xl">Confirm Bulk Deletion</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to delete {selectedCount} selected students? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button type="button" variant="outline" onClick={() => setShowBulkDeleteModal(false)}>
+                    <DialogFooter className="gap-2 sm:gap-0 flex flex-col sm:flex-row">
+                        <Button type="button" variant="outline" onClick={() => setShowBulkDeleteModal(false)} className="w-full sm:w-auto">
                             Cancel
                         </Button>
-                        <Button type="button" variant="destructive" onClick={handleBulkDelete}>
+                        <Button type="button" variant="destructive" onClick={handleBulkDelete} className="w-full sm:w-auto">
                             Delete {selectedCount} Students
                         </Button>
                     </DialogFooter>
