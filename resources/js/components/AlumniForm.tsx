@@ -319,7 +319,9 @@ export const AlumniForm = memo(function AlumniForm({
                     <CardTitle className="text-center text-3xl font-bold text-primary">
                         {isEditing ? 'Update Alumni Record' : 'Pampanga State U - LC Tracerlink'}
                     </CardTitle>
-                    <p className="text-center text-muted-foreground">
+                    <p className="text-center text-muted-foreground">  <span className="text-start">This form collects your basic alumni details such as name, contact information, program, year of graduation, and more.</span> <br />
+                                                                       <span className="text-start">graduation, and employment status. The information will be stored in the university’s alumni database to</span> <br />
+                                                                       <span className="text-start">keep records updated.</span> <br />
                         {isEditing ? 'Update your information' : 'Please complete all required fields (*)'}
                     </p>
                 </CardHeader>

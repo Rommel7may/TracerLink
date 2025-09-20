@@ -480,14 +480,14 @@ export default function JobPost() {
                     </Button> */}
                     <Popover open={dateFilterOpen} onOpenChange={setDateFilterOpen}>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" className="sm:w-auto" disabled={isApplyingFilters}>
+                            {/* <Button variant="outline" className="sm:w-auto" disabled={isApplyingFilters}>
                                 {isApplyingFilters ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
                                     <Filter className="mr-2 h-4 w-4" />
                                 )}
                                 Filter
-                            </Button>
+                            </Button> */}
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                             <div className="space-y-4">
@@ -583,175 +583,221 @@ export default function JobPost() {
             </div>
 
             {/* Add/Edit Modal */}
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>{editId ? 'Edit Job Post' : 'Add Job Post'}</DialogTitle>
-                        <DialogDescription>
-                            {editId ? 'Update the job post details' : 'Create a new job post for alumni'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <Label>Job Title *</Label>
-                                <Input placeholder="Job Title" value={data.title} onChange={(e) => setData('title', e.target.value)} required />
-                            </div>
-                            
-                            <div>
-                                <Label>Company Name *</Label>
-                                <Input placeholder="Company Name" value={data.company_name} onChange={(e) => setData('company_name', e.target.value)} required />
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <Label>Job Description *</Label>
-                            <Textarea 
-                                placeholder="Job Description" 
-                                value={data.description} 
-                                onChange={(e) => setData('description', e.target.value)} 
-                                required 
-                                rows={4}
-                                className="w-116"
-                            />
-                        </div>
-                        
-                        {/* Location Input */}
-                        <div>
-                            <Label>Location</Label>
-                            <Tabs 
-                                value={locationInputType} 
-                                onValueChange={(val) => setLocationInputType(val as 'text' | 'link')}
-                                className="w-full"
-                            >
-                                <TabsList className="grid w-full grid-cols-2 mb-2">
-                                    <TabsTrigger value="text">
-                                        <MapPin className="h-4 w-4 mr-2" />
-                                        Type Location
-                                    </TabsTrigger>
-                                    <TabsTrigger value="link">
-                                        <LinkIcon className="h-4 w-4 mr-2" />
-                                        Google Maps Link
-                                    </TabsTrigger>
-                                </TabsList>
-                                
-                                <TabsContent value="text" className="space-y-2">
-                                    <Input 
-                                        placeholder="Enter location (e.g., 'New York, NY' or '123 Main St')" 
-                                        value={data.location} 
-                                        onChange={(e) => setData('location', e.target.value)}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        Enter the physical location of the job
-                                    </p>
-                                </TabsContent>
-                                
-                                <TabsContent value="link" className="space-y-2">
-                                    <Input 
-                                        placeholder="Paste Google Maps link (e.g., https://goo.gl/maps/...)" 
-                                        value={data.location_link} 
-                                        onChange={(e) => setData('location_link', e.target.value)}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        Paste a Google Maps link to provide precise location
-                                    </p>
-                                    {data.location_link && extractCoordinatesFromLink(data.location_link) && (
-                                        <div className="text-xs text-green-600 flex items-center">
-                                            <MapPin className="h-3 w-3 mr-1" />
-                                            Valid Google Maps link detected
-                                        </div>
-                                    )}
-                                    {data.location_link && !extractCoordinatesFromLink(data.location_link) && (
-                                        <div className="text-xs text-amber-600">
-                                            This doesn't appear to be a valid Google Maps link
-                                        </div>
-                                    )}
-                                </TabsContent>
-                            </Tabs>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <Label>Requirements</Label>
-                                <Textarea 
-                                    placeholder="Requirements" 
-                                    value={data.requirements} 
-                                    onChange={(e) => setData('requirements', e.target.value)} 
-                                    rows={3}
-                                />
-                            </div>
-                            
-                            <div>
-                                <Label>Responsibilities</Label>
-                                <Textarea
-                                    placeholder="Responsibilities"
-                                    value={data.responsibilities}
-                                    onChange={(e) => setData('responsibilities', e.target.value)}
-                                    rows={3}
-                                />
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <Label>Apply Link</Label>
-                            <Input placeholder="Apply Link" value={data.apply_link} onChange={(e) => setData('apply_link', e.target.value)} />
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            
-                            <div>
-                                <Label>Application Deadline</Label>
-                                <Input 
-                                    type="date" 
-                                    value={data.application_deadline} 
-                                    onChange={(e) => setData('application_deadline', e.target.value)} 
-                                    min={data.posted_date || undefined}
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">Deadline for applications</p>
-                            </div>
-                            
-                            <div>
-                                <Label>Job Start Date</Label>
-                                <Input 
-                                    type="date" 
-                                    value={data.start_date} 
-                                    onChange={(e) => setData('start_date', e.target.value)} 
-                                    min={data.posted_date || undefined}
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">When job starts</p>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <Label className="mb-1 block font-medium">Status</Label>
-                            <Select 
-                                value={data.status} 
-                                onValueChange={(val: 'active' | 'inactive') => setData('status', val)}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="inactive">Inactive</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+           <Dialog open={open} onOpenChange={setOpen}>
+  <DialogContent className="sm:max-w-[600px] md:max-w-[700px] lg:max-w-[800px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+    <DialogHeader className="px-2 sm:px-0">
+      <DialogTitle className="text-lg sm:text-xl">
+        {editId ? 'Edit Job Post' : 'Add Job Post'}
+      </DialogTitle>
+      <DialogDescription className="text-sm sm:text-base">
+        {editId ? 'Update the job post details' : 'Create a new job post for alumni'}
+      </DialogDescription>
+    </DialogHeader>
+    
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Job Title *</Label>
+          <Input 
+            placeholder="Job Title" 
+            value={data.title} 
+            onChange={(e) => setData('title', e.target.value)} 
+            required 
+            className="w-full"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Company Name *</Label>
+          <Input 
+            placeholder="Company Name" 
+            value={data.company_name} 
+            onChange={(e) => setData('company_name', e.target.value)} 
+            required 
+            className="w-full"
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label className="text-sm sm:text-base">Job Description *</Label>
+        <Textarea 
+          placeholder="Job Description" 
+          value={data.description} 
+          onChange={(e) => setData('description', e.target.value)} 
+          required 
+          rows={4}
+          className="w-full min-h-[120px]"
+        />
+      </div>
+      
+      {/* Location Input */}
+      <div className="space-y-2">
+        <Label className="text-sm sm:text-base">Location</Label>
+        <Tabs 
+          value={locationInputType} 
+          onValueChange={(val) => setLocationInputType(val as 'text' | 'link')}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2 mb-2 h-10">
+            <TabsTrigger value="text" className="text-xs sm:text-sm py-1">
+              <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Type Location
+            </TabsTrigger>
+            <TabsTrigger value="link" className="text-xs sm:text-sm py-1">
+              <LinkIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Google Maps Link
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="text" className="space-y-1">
+            <Input 
+              placeholder="Enter location (e.g., 'New York, NY' or '123 Main St')" 
+              value={data.location} 
+              onChange={(e) => setData('location', e.target.value)}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              Enter the physical location of the job
+            </p>
+          </TabsContent>
+          
+          <TabsContent value="link" className="space-y-1">
+            <Input 
+              placeholder="Paste Google Maps link (e.g., https://goo.gl/maps/...)" 
+              value={data.location_link} 
+              onChange={(e) => setData('location_link', e.target.value)}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              Paste a Google Maps link to provide precise location
+            </p>
+            {data.location_link && extractCoordinatesFromLink(data.location_link) && (
+              <div className="text-xs text-green-600 flex items-center">
+                <MapPin className="h-3 w-3 mr-1" />
+                Valid Google Maps link detected
+              </div>
+            )}
+            {data.location_link && !extractCoordinatesFromLink(data.location_link) && (
+              <div className="text-xs text-amber-600">
+                This doesn't appear to be a valid Google Maps link
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Requirements</Label>
+          <Textarea 
+            placeholder="Requirements" 
+            value={data.requirements} 
+            onChange={(e) => setData('requirements', e.target.value)} 
+            rows={3}
+            className="w-full min-h-[100px]"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Responsibilities</Label>
+          <Textarea
+            placeholder="Responsibilities"
+            value={data.responsibilities}
+            onChange={(e) => setData('responsibilities', e.target.value)}
+            rows={3}
+            className="w-full min-h-[100px]"
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label className="text-sm sm:text-base">Apply Link</Label>
+        <Input 
+          placeholder="Apply Link" 
+          value={data.apply_link} 
+          onChange={(e) => setData('apply_link', e.target.value)} 
+          className="w-full"
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Posted Date</Label>
+          <Input 
+            type="date" 
+            value={data.posted_date} 
+            onChange={(e) => setData('posted_date', e.target.value)} 
+            className="w-full"
+          />
+          <p className="text-xs text-muted-foreground">When job was posted</p>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Application Deadline</Label>
+          <Input 
+            type="date" 
+            value={data.application_deadline} 
+            onChange={(e) => setData('application_deadline', e.target.value)} 
+            min={data.posted_date || undefined}
+            className="w-full"
+          />
+          <p className="text-xs text-muted-foreground">Deadline for applications</p>
+        </div>
+        
+        {/* <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Job Start Date</Label>
+          <Input 
+            type="date" 
+            value={data.start_date} 
+            onChange={(e) => setData('start_date', e.target.value)} 
+            min={data.posted_date || undefined}
+            className="w-full"
+          />
+          <p className="text-xs text-muted-foreground">When job starts</p>
+        </div>
+         */}
+        
+      </div>
+      
+      <div className="space-y-2">
+        <Label className="text-sm sm:text-base block font-medium">Status</Label>
+        <Select 
+          value={data.status} 
+          onValueChange={(val: 'active' | 'inactive') => setData('status', val)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : null}
-                                {editId ? 'Update' : 'Create'} Job Post
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+      <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 mt-6 px-2 sm:px-0">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => setOpen(false)}
+          className="w-full sm:w-auto order-2 sm:order-1"
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={processing}
+          className="w-full sm:w-auto order-1 sm:order-2 mb-2 sm:mb-0 sm:ml-2"
+        >
+          {processing ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : null}
+          {editId ? 'Update' : 'Create'} Job Post
+        </Button>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>
 
             {/* View Job Details Modal */}
             <Dialog open={viewOpen} onOpenChange={setViewOpen}>
@@ -1024,16 +1070,16 @@ export default function JobPost() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-12">
-                                    <Input
-                                        type="checkbox"
-                                        className="w-4 h-4"
-                                        checked={selectedJobs.length === jobs.length && jobs.length > 0}
-                                        onChange={() =>
-                                            setSelectedJobs(
-                                                selectedJobs.length === jobs.length ? [] : jobs.map((j) => j.id)
-                                            )
-                                        }
-                                    />
+                                        {/* <Input
+                                            type="checkbox"
+                                            className="w-4 h-4"
+                                            checked={selectedJobs.length === jobs.length && jobs.length > 0}
+                                            onChange={() =>
+                                                setSelectedJobs(
+                                                    selectedJobs.length === jobs.length ? [] : jobs.map((j) => j.id)
+                                                )
+                                            }
+                                        /> */}
                                 </TableHead>
                                 <TableHead>Title</TableHead>
                                 <TableHead>Company</TableHead>
@@ -1059,12 +1105,12 @@ export default function JobPost() {
                                     return (
                                         <TableRow key={job.id} className={!isActive ? 'opacity-70 bg-muted/30' : ''}>
                                             <TableCell>
-                                                <Input
+                                                {/* <Input
                                                     type="checkbox"
                                                     checked={selectedJobs.includes(job.id)}
                                                     onChange={() => toggleSelectJob(job.id)}
                                                     className="w-4 h-4"
-                                                />
+                                                /> */}
                                             </TableCell>
                                             <TableCell className="font-medium">{job.title}</TableCell>
                                             <TableCell>{job.company_name}</TableCell>
