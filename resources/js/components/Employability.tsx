@@ -5,6 +5,13 @@ import { useState, useMemo } from "react";
 import { usePage } from "@inertiajs/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RefreshCw, Download } from "lucide-react";
 import {
   Table,
@@ -55,46 +62,45 @@ export default function EmployabilityPage() {
     });
   }, [props.alumni, query, programFilter]);
 
-const exportToExcel = () => {
-  const data = filtered.map(a => ({
-    "Program Name": a.program?.name || "N/A",
-    "Graduate Name": `${a.last_name || "N/A"}, ${a.given_name || "N/A"} ${a.middle_initial || ""}`,
-    "Status": a.employment_status || "N/A",
-    "Sex": a.sex || "N/A",
-    "Company / Business": a.company_name || "N/A",
-    "Position / Work Nature": a.work_position || "N/A",
-  }));
+  const exportToExcel = () => {
+    const data = filtered.map(a => ({
+      "Program Name": a.program?.name || "N/A",
+      "Graduate Name": `${a.last_name || "N/A"}, ${a.given_name || "N/A"} ${a.middle_initial || ""}`,
+      "Status": a.employment_status || "N/A",
+      "Sex": a.sex || "N/A",
+      "Company / Business": a.company_name || "N/A",
+      "Position / Work Nature": a.work_position || "N/A",
+    }));
 
-  // Create worksheet from JSON
-  const ws = XLSX.utils.json_to_sheet(data);
+    // Create worksheet from JSON
+    const ws = XLSX.utils.json_to_sheet(data);
 
-  // Set column widths
-  ws['!cols'] = [
-    { wch: 25 },
-    { wch: 30 },
-    { wch: 15 },
-    { wch: 10 },
-    { wch: 35 },
-    { wch: 25 },
-  ];
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 25 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 35 },
+      { wch: 25 },
+    ];
 
-  // Bold the header row
-  const header = Object.keys(data[0] || {});
-  header.forEach((_, i) => {
-    const cell = ws[XLSX.utils.encode_cell({ r: 0, c: i })];
-    if (cell) {
-      cell.v = cell.v.toString();
-    }
-  });
+    // Bold the header row
+    const header = Object.keys(data[0] || {});
+    header.forEach((_, i) => {
+      const cell = ws[XLSX.utils.encode_cell({ r: 0, c: i })];
+      if (cell) {
+        cell.v = cell.v.toString();
+      }
+    });
 
-  // Create workbook and append worksheet
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Employability");
+    // Create workbook and append worksheet
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Employability");
 
-  // Save as Excel file
-  XLSX.writeFile(wb, "Employability_Report.xlsx");
-};
-
+    // Save as Excel file
+    XLSX.writeFile(wb, "Employability_Report.xlsx");
+  };
 
   return (
     <div className="p-6">
@@ -108,16 +114,17 @@ const exportToExcel = () => {
               placeholder="Search alumni, program, or company..."
               className="w-64"
             />
-            <select
-              value={programFilter}
-              onChange={(e) => setProgramFilter(e.target.value)}
-              className="border rounded p-2"
-            >
-              <option value="all">All Programs</option>
-              {props.programs.map(p => (
-                <option key={p.id} value={p.name}>{p.name}</option>
-              ))}
-            </select>
+            <Select value={programFilter} onValueChange={setProgramFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select program" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Programs</SelectItem>
+                {props.programs.map(p => (
+                  <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               size="icon"

@@ -4,74 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Notification</title>
-  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body style="background-color:#f9fafb; color:#1f2937; font-family: Arial, sans-serif; margin:0; padding:20px;">
 
-  <div class="max-w-xl mx-auto bg-white rounded-xl overflow-hidden shadow-md mt-8 mb-8">
+  <div style="max-width:600px; margin:20px auto; background-color:#ffffff;overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
 
     <!-- Header -->
-    <div class="bg-blue-600 p-6 text-center rounded-t-xl">
-      <h2 class="text-white text-2xl font-bold mb-1">New Job Opportunity: {{ $job->title }}</h2>
-      <p class="text-blue-100 text-sm">Apply within the specified date range to be considered</p>
+    <div style="background-color:#f3f4f6; padding:24px; text-align:center;">
+      <h2 style="color:#111827; font-size:20px; font-weight:bold; margin:0 0 8px 0;">
+        New Job Opportunity: {{ $job->title }}
+      </h2>
+      <p style="color:#6b7280; font-size:13px; margin:0;">Apply within the specified date range to be considered</p>
     </div>
 
     <!-- Date Range -->
-    <div class="flex justify-center gap-4 p-6 flex-wrap">
-      <div class="bg-blue-100 text-blue-800 p-4 rounded-lg text-center min-w-[120px]">
-        <div class="text-sm opacity-80">POSTED ON</div>
-        <div class="text-lg font-bold">{{ \Carbon\Carbon::parse($job->start_date)->format('F d, Y') }}</div>
+    <div style="display:flex; justify-content:center; gap:16px; padding:24px; flex-wrap:wrap;">
+      <div style="color:#111827; padding:16px; text-align:center; min-width:120px;">
+        <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">POSTED ON</div>
+        <div style="font-size:16px; font-weight:bold;">
+          {{ \Carbon\Carbon::parse($job->start_date)->format('F d, Y') }}
+        </div>
       </div>
-      <div class="bg-blue-100 text-blue-800 p-4 rounded-lg text-center min-w-[120px]">
-        <div class="text-sm opacity-80">APPLY UNTIL</div>
-        <div class="text-lg font-bold">{{ \Carbon\Carbon::parse($job->application_deadline)->format('F d, Y') }}</div>
+      <div style="color:#111827; padding:16px;  text-align:center; min-width:120px;">
+        <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">APPLY UNTIL</div>
+        <div style="font-size:16px; font-weight:bold;">
+          {{ \Carbon\Carbon::parse($job->application_deadline)->format('F d, Y') }}
+        </div>
       </div>
     </div>
 
-    <p class="text-center italic text-gray-700 px-6 mb-6">
+    <p style="text-align:center; font-style:italic; color:#374151; padding:0 24px 24px 24px; margin:0;">
       This position will be available for applications between 
-      <span class="text-blue-600 font-semibold">{{ \Carbon\Carbon::parse($job->start_date)->format('F d, Y') }}</span> 
+      <span style="font-weight:600; color:#111827;">
+        {{ \Carbon\Carbon::parse($job->start_date)->format('F d, Y') }}
+      </span> 
       and 
-      <span class="text-blue-600 font-semibold">{{ \Carbon\Carbon::parse($job->application_deadline)->format('F d, Y') }}</span>.
+      <span style="font-weight:600; color:#111827;">
+        {{ \Carbon\Carbon::parse($job->application_deadline)->format('F d, Y') }}
+      </span>.
     </p>
 
     <!-- Job Info -->
-    <div class="bg-blue-50 p-6 rounded-lg mx-6 mb-6">
-       <p><strong>Company:</strong> {{ $job->company_name }}</p>
+    <div style="background-color:#f9fafb; padding:24px; margin:0 24px 24px 24px; font-size:14px; line-height:1.5;">
+      <p><strong>Company:</strong> {{ $job->company_name }}</p>
        
-@if($job->location)
-  <p><strong>Location:</strong>{{ $job->location }}</p>
-@endif
+      @if($job->location)
+        <p><strong>Location:</strong> {{ $job->location }}</p>
+      @endif
 
-@if($job->location_link)
-  <p><strong>Location:</strong>
-    <a href="{{ $job->location_link }}" target="_blank" class="text-blue-600 underline">
-      📍 View Location on Google Maps
-    </a>
-  </p>
-@endif
+      @if($job->location_link)
+        <p><strong>Location:</strong> 
+          <a href="{{ $job->location_link }}" target="_blank" style="color:#111827; text-decoration:underline;">
+            📍 View Location on Google Maps
+          </a>
+        </p>
+      @endif
+
       @if($job->description)
-      <p><strong>Description:</strong> {{ $job->description }}</p>
+        <p><strong>Description:</strong> {{ $job->description }}</p>
       @endif
+
       @if($job->requirements)
-      <p><strong>Requirements:</strong> {{ $job->requirements }}</p>
+        <p><strong>Requirements:</strong> {{ $job->requirements }}</p>
       @endif
+
       @if($job->responsibilities)
-      <p><strong>Responsibilities:</strong> {{ $job->responsibilities }}</p>
+        <p><strong>Responsibilities:</strong> {{ $job->responsibilities }}</p>
       @endif
     </div>
 
     <!-- Apply Button -->
     @if($job->apply_link)
-    <div class="text-center mb-8">
-      <a href="{{ $job->apply_link }}" class="inline-block px-10 py-4 bg-gradient-to-b from-blue-400 to-blue-500 text-white font-bold text-lg rounded-full shadow-md border-2 border-blue-400 uppercase tracking-wide hover:from-blue-500 hover:to-blue-600 hover:shadow-lg transition transform hover:-translate-y-1">
+    <div style="text-align:center; margin-bottom:32px;">
+      <a href="{{ $job->apply_link }}" 
+         style="display:inline-block; padding:16px 40px; background:linear-gradient(to bottom,#60a5fa,#3b82f6); color:#ffffff; font-weight:bold; font-size:16px; border-radius:9999px; text-decoration:none; border:2px solid #60a5fa; text-transform:uppercase; letter-spacing:1px; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
         Apply Now
       </a>
     </div>
     @endif
 
     <!-- Footer -->
-    <div class="bg-gray-100 text-center text-gray-500 text-sm p-4 border-t border-gray-300">
+    <div style="background-color:#f3f4f6; text-align:center; color:#6b7280; font-size:12px; padding:16px; border-top:1px solid #d1d5db;">
       You are receiving this email because you are registered on <strong>Pampanga State U - LC TracerLink</strong>.<br>
       &copy; {{ date('Y') }} Pampanga State U - LC TracerLink. All rights reserved.
     </div>

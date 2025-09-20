@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import AppLogoIcon from '@/components/app-logo-icon';
 
 type LoginForm = {
   email: string;
@@ -133,8 +134,8 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <div className="bg-primary/10 p-3 rounded-full">
-              <Shield className="h-8 w-8 text-primary" />
+            <div className="bg-primary/10 rounded-full">
+              <AppLogoIcon/>
             </div>
           </div>
           <CardTitle className="text-2xl text-center">Welcome</CardTitle>

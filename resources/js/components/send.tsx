@@ -25,7 +25,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import axios from 'axios';
-import { DownloadCloudIcon, FileUp, MoreHorizontal, PlusIcon, Search, Trash, Menu, X } from 'lucide-react';
+import { DownloadCloudIcon, FileUp, MoreHorizontal, PlusIcon, Search, Trash, Menu, X, Loader2 } from 'lucide-react';
 import * as React from 'react';
 import { toast, Toaster } from 'sonner';
 
@@ -57,6 +57,7 @@ export default function StudentIndex() {
     const [deleteId, setDeleteId] = React.useState<number | null>(null);
     const [showBulkDeleteModal, setShowBulkDeleteModal] = React.useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+    const [importLoading, setImportLoading] = React.useState(false);
 
     const { data, setData, reset, processing } = useForm({
         id: '',
@@ -113,6 +114,7 @@ export default function StudentIndex() {
         e.preventDefault();
         if (!excelFile) return;
 
+        setImportLoading(true);
         const formData = new FormData();
         formData.append('file', excelFile);
 
@@ -128,6 +130,8 @@ export default function StudentIndex() {
         } catch (err: any) {
             console.error('Import error:', err);
             toast.error(err.response?.data?.message || 'Import failed!');
+        } finally {
+            setImportLoading(false);
         }
     };
 
@@ -579,9 +583,13 @@ export default function StudentIndex() {
                             <Button type="button" variant="outline" onClick={() => setShowUploadModal(false)} className="w-full sm:w-auto">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={!excelFile} className="w-full sm:w-auto">
-                                <FileUp className="mr-2 h-4 w-4" />
-                                Upload File
+                            <Button type="submit" disabled={!excelFile || importLoading} className="w-full sm:w-auto">
+                                {importLoading ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <FileUp className="mr-2 h-4 w-4" />
+                                )}
+                                {importLoading ? 'Importing...' : 'Upload File'}
                             </Button>
                         </DialogFooter>
                     </form>
