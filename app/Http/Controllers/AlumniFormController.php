@@ -38,11 +38,6 @@ class AlumniFormController extends Controller
             'middle_initial' => 'nullable|string',
             'sex' => ['required', Rule::in(['male', 'female'])], // ✅ required sa create
             'present_address' => 'required|string',
-            // 'active_email' => [
-            //     'required',
-            //     'email',
-            //     Rule::unique('alumni', 'active_email'),
-            // ],
             'contact_number' => 'required|string',
             'graduation_year' => 'required|digits:4',
             'employment_status' => 'required|string',
@@ -65,7 +60,6 @@ class AlumniFormController extends Controller
             'student_number.required' => 'Student number is required.',
             'student_number.exists'   => 'The student is not registered.',
             'student_number.unique'   => 'This student is already in the alumni records.',
-            // 'active_email.unique'     => 'This active email is already registered.',
             'program_id.exists'       => 'The selected program does not exist.',
             'consent.required'        => 'You must provide your consent before submitting.',
         ];
@@ -112,11 +106,6 @@ class AlumniFormController extends Controller
             'given_name' => 'required|string',
             'middle_initial' => 'nullable|string',
             'present_address' => 'required|string',
-            // 'active_email' => [
-            //     'required',
-            //     'email',
-            //     Rule::unique('alumni', 'active_email')->ignore($alumni->id),
-            // ],
             'contact_number' => 'required|string',
             'graduation_year' => 'required|digits:4',
             'sex' => ['required', Rule::in(['male', 'female'])], // ✅ required sa update
@@ -157,14 +146,4 @@ class AlumniFormController extends Controller
 
         return redirect()->back()->with('success', '✅ Alumni info updated successfully!');
     }
-
-    // 🔍 Check if active email already exists
-    // public function checkActiveEmail(Request $request)
-    // {
-    //     $email = $request->query('email');
-
-    //     $exists = Alumni::where('active_email', $email)->exists();
-
-    //     return response()->json(['exists' => $exists]);
-    // }
 }

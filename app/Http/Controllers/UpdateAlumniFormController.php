@@ -43,11 +43,6 @@ class UpdateAlumniFormController extends Controller
             'middle_initial' => 'nullable|string',
             'sex' => ['required', Rule::in(['male', 'female'])], // ✅ Gender validation
             'present_address' => 'required|string',
-            // 'active_email' => [
-            //     'required',
-            //     'email',
-            //     Rule::unique('alumni', 'active_email')->ignore($alumni->id),
-            // ],
             'contact_number' => 'required|string',
             'graduation_year' => ['required', 'digits:4'],
             'employment_status' => 'required|string',

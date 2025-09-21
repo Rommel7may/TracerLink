@@ -35,7 +35,6 @@ class AlumniCreated implements ShouldBroadcastNow
             'given_name' => $this->alumni->given_name,
             'middle_initial' => $this->alumni->middle_initial,
             'present_address' => $this->alumni->present_address,
-            // 'active_email' => $this->alumni->active_email,
             'contact_number' => $this->alumni->contact_number,
             'graduation_year' => $this->alumni->graduation_year,
             'college' => $this->alumni->college,
