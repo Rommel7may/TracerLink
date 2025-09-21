@@ -33,7 +33,7 @@ class AlumniImport implements ToModel, WithHeadingRow, WithValidation
             'given_name'              => $row['given_name'] ?? null,
             'middle_initial'          => $row['middle_initial'] ?? null,
             'present_address'         => $row['present_address'] ?? null,
-            'active_email'            => $row['active_email'] ?? null,
+            // 'active_email'            => $row['active_email'] ?? null,
             'contact_number'          => $row['contact_number'] ?? null,
             'graduation_year'         => $row['graduation_year'] ?? null,
             'employment_status'       => $row['employment_status'] ?? null,

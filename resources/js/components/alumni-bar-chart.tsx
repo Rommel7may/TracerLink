@@ -59,7 +59,7 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
     let notTracked = typeof item.notTracked === 'string' ? parseInt(item.notTracked) || 0 : item.notTracked
 
     // Auto-compute kapag walang value galing backend
-    if ((!notTracked || isNaN(notTracked)) && total > 0) {
+    if ((!notTracked || (notTracked)) && total > 0) {
       notTracked = total - (employed + unemployed)
     }
 

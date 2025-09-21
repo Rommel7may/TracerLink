@@ -21,7 +21,7 @@ interface AlumniFormProps {
     given_name?: string;
     middle_initial?: string;
     present_address?: string;
-    active_email?: string;
+    // active_email?: string;
     contact_number?: string;
     graduation_year?: string;
     employment_status?: string;
@@ -70,7 +70,7 @@ export const AlumniForm = memo(function AlumniForm({
     given_name = '',
     middle_initial = '',
     present_address = '',
-    active_email = '',
+    // active_email = '',
     contact_number = '',
     graduation_year = '',
     employment_status = '',
@@ -110,7 +110,7 @@ export const AlumniForm = memo(function AlumniForm({
         given_name: given_name || '',
         middle_initial: middle_initial || '',
         present_address: present_address || '',
-        active_email: active_email || '',
+        // active_email: active_email || '',
         contact_number: contact_number || '',
         graduation_year: graduation_year || '',
         employment_status: employment_status || '',
@@ -183,7 +183,7 @@ export const AlumniForm = memo(function AlumniForm({
                 'last_name',
                 'given_name',
                 'present_address',
-                'active_email',
+                // 'active_email',
                 'contact_number',
                 'graduation_year',
                 'employment_status',
@@ -203,16 +203,16 @@ export const AlumniForm = memo(function AlumniForm({
             }
 
             try {
-                if (!isEditing) {
-                    const res = await axios.get('/check-active-email', {
-                        params: { email: data.active_email },
-                    });
+                // if (!isEditing) {
+                //     const res = await axios.get('/check-active-email', {
+                //         params: { email: data.active_email },
+                //     });
 
-                    if (res.data.exists) {
-                        toast.error('❌ Active email already exists. Please use another email.');
-                        return;
-                    }
-                }
+                //     if (res.data.exists) {
+                //         toast.error('❌ Active email already exists. Please use another email.');
+                //         return;
+                //     }
+                // }
 
                 const isEmployed = data.employment_status === 'employed';
 
@@ -353,7 +353,7 @@ export const AlumniForm = memo(function AlumniForm({
                                     />
                                 </FieldWrapper>
 
-                                <FieldWrapper label="Active Email" required error={errors.active_email}>
+                                {/* <FieldWrapper label="Active Email" required error={errors.active_email}>
                                     <Input
                                         className={`h-11 ${errors.active_email ? 'border-red-500' : ''}`}
                                         value={data.active_email || ''}
@@ -362,7 +362,7 @@ export const AlumniForm = memo(function AlumniForm({
                                         placeholder="Active Email"
                                         type="email"
                                     />
-                                </FieldWrapper>
+                                </FieldWrapper> */}
 
                                 <FieldWrapper label="Last Name" required error={errors.last_name}>
                                     <Input
@@ -475,8 +475,8 @@ export const AlumniForm = memo(function AlumniForm({
                                             <SelectValue placeholder="Select status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="employed">Employed</SelectItem>
-                                            <SelectItem value="unemployed">Unemployed</SelectItem>
+                                            <SelectItem value="Employed">Employed</SelectItem>
+                                            <SelectItem value="Unemployed">Unemployed</SelectItem>
                                             <SelectItem value="not-tracked">Not Tracked</SelectItem>
                                         </SelectContent>
                                     </Select>
