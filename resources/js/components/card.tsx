@@ -36,7 +36,7 @@ export function SectionCards({ programs = [] }: { programs: Program[] }) {
             <div className="flex justify-between items-start">
               <div>
                 <CardDescription className="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide">
-                  Total Response
+                  Overall Responses Across All Programs
                 </CardDescription>
                 <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
                   {total.toLocaleString()}

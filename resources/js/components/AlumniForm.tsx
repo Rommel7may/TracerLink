@@ -139,21 +139,20 @@ export const AlumniForm = memo(function AlumniForm({
     );
 
     const handleEmploymentStatusChange = useCallback(
-        (val: string) => {
-            setData('employment_status', val);
-            if (val !== 'employed') {
-                // Clear employment-related fields
-                setData('company_name', '');
-                setData('work_position', '');
-                setData('sector', '');
-                setData('work_location', '');
-                setData('employer_classification', '');
-                setData('related_to_course', '');
-            }
-        },
-        [setData],
-    );
-
+    (val: string) => {
+        setData('employment_status', val);
+        if (val !== 'Employed') { // ✅ Use exact match with your SelectItem value
+            // Clear employment-related fields
+            setData('company_name', '');
+            setData('work_position', '');
+            setData('sector', '');
+            setData('work_location', '');
+            setData('employer_classification', '');
+            setData('related_to_course', '');
+        }
+    },
+    [setData],
+);
     const handleConsentChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             setData('consent', e.target.checked);
@@ -305,11 +304,20 @@ export const AlumniForm = memo(function AlumniForm({
                     <CardTitle className="text-center text-3xl font-bold text-primary">
                         {isEditing ? 'Update Alumni Record' : 'Pampanga State U - LC Tracerlink'}
                     </CardTitle>
-                    <p className="text-center text-muted-foreground">  <span className="text-start">This form collects your basic alumni details such as name, contact information, program, year of graduation, and more.</span> <br />
-                                                                       <span className="text-start">graduation, and employment status. The information will be stored in the university’s alumni database to</span> <br />
-                                                                       <span className="text-start">keep records updated.</span> <br />
-                        {isEditing ? 'Update your information' : 'Please complete all required fields (*)'}
-                    </p>
+                    <div className="text-start text-muted-foreground space-y-1">
+  <p>
+    This form collects your basic alumni details such as name, contact information, program,
+    year of graduation, and employment status.
+  </p>
+  <p>
+    The information will be stored in the university’s alumni database to keep records updated.
+  </p><br /><br />
+  <p className="font-medium">
+    {isEditing ? 'Update your information' : 'Please complete all required fields (*)'}
+  </p>
+</div>
+
+
                 </CardHeader>
 
                 <CardContent className="p-6">
@@ -457,7 +465,7 @@ export const AlumniForm = memo(function AlumniForm({
                                     </Select>
                                 </FieldWrapper>
 
-                                {data.employment_status === 'employed' && (
+                                {data.employment_status === 'Employed' && (
                                     <>
                                         <FieldWrapper label="Company Name" error={errors.company_name}>
                                             <Input
@@ -516,14 +524,8 @@ export const AlumniForm = memo(function AlumniForm({
                                                 </SelectContent>
                                             </Select>
                                         </FieldWrapper>
-                                    </>
-                                )}
-                            </div>
-                        </div>
 
-                        <div className="space-y-4">
-                            <h3 className="border-b pb-2 text-xl font-semibold text-foreground">Employer Classification</h3>
-                            <FieldWrapper label="Your employment classifacation" error={errors.employer_classification}>
+                                           <FieldWrapper label="Your employment classifacation" error={errors.employer_classification}>
                                 <Select value={data.employer_classification || ''} onValueChange={handleSelectChange('employer_classification')}>
                                     <SelectTrigger className={`h-11 ${errors.employer_classification ? 'border-red-500' : ''}`}>
                                         <SelectValue placeholder="Select option" />
@@ -536,6 +538,10 @@ export const AlumniForm = memo(function AlumniForm({
                                     </SelectContent>
                                 </Select>
                             </FieldWrapper>
+            
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         {/* Further Studies */}
