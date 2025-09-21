@@ -46,21 +46,33 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-
 export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear[] }) {
   const [groupSize, setGroupSize] = useState<number>(1)
   const [viewMode, setViewMode] = useState<'grouped' | 'individual'>('individual')
 
-  // First, ensure all values are numbers (not strings)
-    const sanitizedData = alumniPerYear.map(item => {
-    const employed = typeof item.employed === 'string' ? parseInt(item.employed) || 0 : item.employed
-    const unemployed = typeof item.unemployed === 'string' ? parseInt(item.unemployed) || 0 : item.unemployed
-    const total = typeof item.total === 'string' ? parseInt(item.total) || 0 : item.total
-    let notTracked = typeof item.notTracked === 'string' ? parseInt(item.notTracked) || 0 : item.notTracked
+  // Enhanced data sanitization
+  const sanitizedData = alumniPerYear.map(item => {
+    // Helper function to safely parse numbers
+    const safeParseNumber = (value: any): number => {
+      if (typeof value === 'number') return value;
+      if (typeof value === 'string') {
+        // Remove commas and any non-numeric characters except minus sign
+        const cleaned = value.toString().replace(/[^\d.-]/g, '');
+        const parsed = parseInt(cleaned);
+        return isNaN(parsed) ? 0 : parsed;
+      }
+      if (value === null || value === undefined) return 0;
+      return 0;
+    };
 
-    // Auto-compute kapag walang value galing backend
-    if ((!notTracked || (notTracked)) && total > 0) {
-      notTracked = total - (employed + unemployed)
+    const employed = safeParseNumber(item.employed);
+    const unemployed = safeParseNumber(item.unemployed);
+    const total = safeParseNumber(item.total);
+    let notTracked = safeParseNumber(item.notTracked);
+
+    // Auto-compute notTracked if it's zero or invalid
+    if ((notTracked === 0 || isNaN(notTracked)) && total > 0) {
+      notTracked = Math.max(0, total - (employed + unemployed));
     }
 
     return {
@@ -69,8 +81,11 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
       unemployed,
       notTracked,
       total,
-    }
-  })
+    };
+  });
+
+  // Rest of your component remains the same...
+  // [Keep all the other functions and JSX as they were]
 
 
   // Function to group years
