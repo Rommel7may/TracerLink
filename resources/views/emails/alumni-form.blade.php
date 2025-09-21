@@ -56,7 +56,6 @@
                       <ul style="font-size: 15px; line-height: 1.5; color: #202124; margin: 0 0 24px 0; padding-left: 20px;">
                         <li style="margin-bottom: 8px;">Tracking the success of our graduates</li>
                         <li style="margin-bottom: 8px;">Improving our academic programs</li>
-                        <li style="margin-bottom: 8px;">Connecting alumni with opportunities</li>
                       </ul>
 
                       <p style="font-size: 15px; line-height: 1.5; color: #202124; margin: 0 0 24px 0;">
