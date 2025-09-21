@@ -21,7 +21,7 @@ class AlumniFormMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Fill Out Your DHVSU Alumni Tracer Form')
+        return $this->subject('Fill Out Your Pampanga State U Alumni Tracer Form')
                     ->view('emails.alumni-form');
     }
 }

@@ -76,7 +76,6 @@ class AlumniExportController extends Controller
                     $a->middle_initial,
                     $a->sex,
                     $a->present_address,
-                    // $a->active_email,
                     $a->contact_number,
                     $a->graduation_year,
                     $a->employment_status,

@@ -63,7 +63,6 @@ class AlumniImportController extends Controller
                     'middle_initial' => $row[5] ?? null,
                     'sex' => $row[6] ?? null,
                     'present_address' => $row[7] ?? null,
-                    // 'active_email' => $row[8] ?? null,
                     'contact_number' => $row[8] ?? null,
                     'graduation_year' => isset($row[9]) ? (int) $row[9] : null,
                     'employment_status' => $row[10] ?? null,

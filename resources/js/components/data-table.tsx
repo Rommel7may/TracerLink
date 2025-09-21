@@ -74,7 +74,6 @@ export type Alumni = {
   given_name: string;
   middle_initial?: string;
   present_address: string;
-  // active_email: string;
   contact_number: string;
   graduation_year: number;
   college?: string;
@@ -817,7 +816,6 @@ export function AlumniTable() {
   given_name={editingAlumni?.given_name}
   middle_initial={editingAlumni?.middle_initial}
   present_address={editingAlumni?.present_address}
-  // active_email={editingAlumni?.active_email}
   contact_number={editingAlumni?.contact_number}
   graduation_year={editingAlumni?.graduation_year?.toString()}
   employment_status={editingAlumni?.employment_status}

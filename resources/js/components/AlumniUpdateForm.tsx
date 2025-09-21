@@ -20,7 +20,6 @@ interface AlumniUpdateFormProps {
   middle_initial?: string
   gender?: string
   present_address?: string
-  // active_email?: string
   contact_number?: string
   graduation_year?: string
   employment_status?: string
@@ -44,7 +43,6 @@ export default function AlumniUpdateForm({
   middle_initial = '',
   gender = '',
   present_address = '',
-  // active_email = '',
   contact_number = '',
   graduation_year = '',
   employment_status = '',
@@ -67,7 +65,6 @@ export default function AlumniUpdateForm({
     middle_initial,
     gender,
     present_address,
-    // active_email,
     contact_number,
     graduation_year,
     employment_status,
@@ -142,7 +139,6 @@ export default function AlumniUpdateForm({
       </Select>
 
       <Input placeholder="Present Address" value={data.present_address} onChange={(e) => setData('present_address', e.target.value)} />
-      {/* <Input type="email" placeholder="Active Email" value={data.active_email} onChange={(e) => setData('active_email', e.target.value)} /> */}
       <Input placeholder="Contact Number" value={data.contact_number} onChange={(e) => setData('contact_number', e.target.value)} />
 
       <Select value={data.graduation_year} onValueChange={(value) => setData('graduation_year', value)}>
