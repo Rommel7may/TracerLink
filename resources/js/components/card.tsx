@@ -63,15 +63,13 @@ export function SectionCards({ programs = [] }: { programs: Program[] }) {
               <div className="flex justify-between items-start">
                 <div>
                   <CardDescription className="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide">
-                    Response per
-                    program
+                    Responses on  
                   </CardDescription>
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white mt-2 line-clamp-2">
                     {program.name}
                   </CardTitle>
                 </div>
                 <div className="p-2 rounded-lg  dark:bg-zinc-800 dark:group-hover:bg-blue-900/30 transition-colors">
-                  <School className="h-4 w-4 text-blue-600 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400" />
                 </div>
               </div>
             </CardHeader>

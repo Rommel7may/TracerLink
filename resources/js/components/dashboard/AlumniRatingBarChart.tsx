@@ -50,9 +50,9 @@ export default function AlumniRatingBarChart({ ratingCounts }: Props) {
               Distribution of alumni feedback on teaching quality
             </CardDescription>
           </div>
-          <div className="p-3 rounded-full bg-amber-100">
+          {/* <div className="p-3 rounded-full bg-amber-100">
             <Award className="h-6 w-6 text-amber-600" />
-          </div>
+          </div> */}
         </div>
       </CardHeader>
 

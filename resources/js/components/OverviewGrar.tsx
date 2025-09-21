@@ -81,9 +81,9 @@ export function GraduatesLineChart() {
               Number of responses by academic year
             </CardDescription>
           </div>
-          <div className="p-2 rounded-full bg-blue-100">
+          {/* <div className="p-2 rounded-full bg-blue-100">
             <Users className="h-5 w-5 text-blue-600" />
-          </div>
+          </div> */}
         </div>
       </CardHeader>
       
