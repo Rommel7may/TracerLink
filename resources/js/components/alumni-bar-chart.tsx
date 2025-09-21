@@ -167,9 +167,9 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
               Yearly breakdown of alumni employment status
             </CardDescription>
           </div>
-          <div className="p-3 rounded-full bg-blue-100">
-            <TrendingUp className="h-6 w-6 text-blue-600" />
-          </div>
+            {/* <div className="p-3 rounded-full bg-blue-100">
+              <TrendingUp className="h-6 w-6 text-blue-600" />
+            </div> */}
         </div>
       </CardHeader>
 

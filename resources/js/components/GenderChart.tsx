@@ -135,9 +135,9 @@ export default function GenderChart() {
               Demographic breakdown of alumni population
             </CardDescription>
           </div>
-          <div className="p-2 rounded-full bg-pink-100">
+          {/* <div className="p-2 rounded-full bg-pink-100">
             <Users className="h-5 w-5 text-pink-600" />
-          </div>
+          </div> */}
         </div>
       </CardHeader>
       

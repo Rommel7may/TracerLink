@@ -681,7 +681,7 @@ export function AlumniTable() {
             <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Confirm Bulk Delete</DialogTitle>
+                        <DialogTitle>Confirm Delete?</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to delete {selectedCount} selected record(s)? This action cannot be undone.
                         </DialogDescription>
