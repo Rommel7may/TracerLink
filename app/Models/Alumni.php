@@ -19,7 +19,7 @@ class Alumni extends Model
         'middle_initial',
         'sex',
         'present_address',
-        'active_email',
+        // 'active_email',
         'contact_number',
         'graduation_year',
         'employment_status',

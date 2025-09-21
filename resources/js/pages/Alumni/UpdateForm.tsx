@@ -39,7 +39,7 @@ export default function UpdateForm() {
     middle_initial: alumni.middle_initial || "",
     sex: alumni.sex || "",
     present_address: alumni.present_address || "",
-    active_email: alumni.active_email || "",
+    // active_email: alumni.active_email || "",
     contact_number: alumni.contact_number || "",
     graduation_year: alumni.graduation_year || "",
     employment_status: alumni.employment_status || "",
@@ -192,7 +192,7 @@ export default function UpdateForm() {
 
         <div>
           <label className="block mb-1 text-sm font-medium">Active Email</label>
-          <Input type="email" value={data.active_email} onChange={(e) => setData("active_email", e.target.value)} />
+          {/* <Input type="email" value={data.active_email} onChange={(e) => setData("active_email", e.target.value)} /> */}
         </div>
 
         <div>
