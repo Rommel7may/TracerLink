@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('middle_initial')->nullable();
             $table->enum('sex', ['male', 'female'])->nullable();
             $table->string('present_address');
-            // $table->string('active_email');
             $table->string('contact_number');
             $table->string('graduation_year');
             $table->string('employment_status');
