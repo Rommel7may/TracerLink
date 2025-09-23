@@ -145,7 +145,7 @@ export function AlumniTable() {
             setAlumniData((prev) => prev.filter((a) => !selectedIds.includes(a.id!)));
             setRowSelection({});
             setBulkDeleteOpen(false);
-            toast.success(`Deleted ${selectedIds.length} record(s) successfully`);
+            toast.success(`Deleted ${selectedIds.length} records successfully`);
         } catch (err) {
             console.error('Bulk delete failed:', err);
             toast.error('Bulk delete failed.');
@@ -691,14 +691,14 @@ export function AlumniTable() {
             <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Confirm Bulk Delete</DialogTitle>
+                        <DialogTitle>Confirm Delete</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to delete {selectedCount} selected record(s)? This action cannot be undone.
+                            Are you sure you want to delete {selectedCount} selected records? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleteLoading}>
-                            {bulkDeleteLoading ? 'Deleting...' : `Delete ${selectedCount} record(s)`}
+                            {bulkDeleteLoading ? 'Deleting...' : `Delete ${selectedCount} records`}
                         </Button>
                         <Button variant="outline" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleteLoading}>
                             Cancel

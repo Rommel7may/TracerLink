@@ -608,13 +608,13 @@ export default function StudentIndex() {
             <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
                 <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl">Confirm Deletion</DialogTitle>
+                        <DialogTitle className="text-xl"> Confirm Deletion </DialogTitle>
                         <DialogDescription>Are you sure you want to delete this student? This action cannot be undone.</DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
                         <Button type="button" variant="outline" onClick={() => setShowDeleteModal(false)} className="w-full sm:w-auto">
                             Cancel
-                        </Button>
+                        </Button> <br />
                         <Button type="button" variant="destructive" onClick={handleDelete} className="w-full sm:w-auto">
                             Delete
                         </Button>
@@ -626,7 +626,7 @@ export default function StudentIndex() {
             <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
                 <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl">Confirm Bulk Deletion</DialogTitle>
+                        <DialogTitle className="text-xl">Confirm Deletion</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to delete {selectedCount} selected students? This action cannot be undone.
                         </DialogDescription>
@@ -636,7 +636,7 @@ export default function StudentIndex() {
                             Cancel
                         </Button>
                         <Button type="button" variant="destructive" onClick={handleBulkDelete} className="w-full sm:w-auto">
-                            Delete {selectedCount} Students
+                            Delete {selectedCount} records
                         </Button>
                     </DialogFooter>
                 </DialogContent>
