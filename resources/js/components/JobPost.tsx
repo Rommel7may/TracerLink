@@ -953,7 +953,7 @@ export default function JobPost() {
             <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Confirm Bulk Deletion</DialogTitle>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to delete {selectedJobs.length} selected job posts? This action cannot be undone.
                         </DialogDescription>

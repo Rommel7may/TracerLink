@@ -57,7 +57,7 @@ const primaryNavItems: NavItem[] = [
 //bot
 const secondaryNavItems: NavItem[] = [
   {
-    title: 'Manage Students',
+    title: 'Manage Alumni',
     href: '/send',
     icon: GraduationCap,
   },
@@ -92,7 +92,7 @@ export function AppSidebar() {
         <SidebarGroupLabel>Overview</SidebarGroupLabel>
         <NavMain items={primaryNavItems} />
         {/* Group 2 */}
-         <SidebarGroupLabel>Manage</SidebarGroupLabel>
+         <SidebarGroupLabel>Management</SidebarGroupLabel>
         <NavMain items={secondaryNavItems} />
       </SidebarContent>
 

@@ -201,7 +201,7 @@ export function GraduatesLineChart() {
                    trend.direction === 'down' ? <ArrowDown className="h-3 w-3" /> : null}
                   <span className="font-medium">
                     {trend.direction === 'up' ? '+' : trend.direction === 'down' ? '-' : ''}
-                    {trend.percentage.toFixed(1)}% from previous year
+                    {trend.percentage.toFixed(1)}% responses from previous year
                   </span>
                 </div>
               </div>
