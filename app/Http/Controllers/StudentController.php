@@ -4,27 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class StudentController extends Controller
 {
     /**
-     * Display all students.
+     * Return all students as JSON.
      */
     public function index()
-{
-    return response()->json(Student::all());
-}
-
-
-    public function getAllStudents()
     {
-        return Student::all();
+        return response()->json(Student::all());
     }
 
     /**
-     * Store a newly created student.
+     * Store a new student.
      */
     public function store(Request $request)
     {
@@ -32,20 +25,19 @@ class StudentController extends Controller
             'student_number' => 'required|string|unique:students',
             'student_name'   => 'required|string|max:255',
             'email'          => 'required|email|unique:students',
-            'year'           => 'required|integer|min:2022|max:' . date('Y'), // ✅ limit from 2022-current year
+            'year'           => 'required|integer|min:2022|max:' . date('Y'),
         ]);
 
         $student = Student::create($validated);
 
-        if ($request->wantsJson()) {
-            return response()->json($student);
-        }
-
-        return redirect()->route('students.index')->with('success', 'Student added!');
+        return response()->json([
+            'message' => 'Student added successfully',
+            'student' => $student
+        ]);
     }
 
     /**
-     * Update an existing student.
+     * Update a student.
      */
     public function update(Request $request, Student $student)
     {
@@ -58,75 +50,71 @@ class StudentController extends Controller
 
         $student->update($validated);
 
-        return response()->json($student);
+        return response()->json([
+            'message' => 'Student updated successfully',
+            'student' => $student
+        ]);
     }
 
     /**
-     * Delete the specified student.
+     * Delete a student.
      */
     public function destroy(Student $student)
     {
         $student->delete();
 
-        return response()->json(['success' => true]);
+        return response()->json(['message' => 'Student deleted successfully']);
     }
 
     /**
      * Import students from Excel.
      */
     public function import(Request $request)
-{
-    $request->validate([
-        'file' => 'required|file',
-    ]);
-
-    $file = $request->file('file');
-    $spreadsheet = IOFactory::load($file->getPathname());
-    $sheet = $spreadsheet->getActiveSheet();
-    $rows = $sheet->toArray();
-
-    // Skip header row
-    array_shift($rows);
-    
-    $inserted = 0;
-
-    foreach ($rows as $row) {
-        $student_number = trim($row[0] ?? '');
-        $student_name   = trim($row[1] ?? '');
-        $email          = trim($row[2] ?? '');
-        $year           = trim($row[3] ?? ''); // Year should be in column D (index 3)
-
-        // Skip invalid rows
-        if (empty($student_number) || empty($student_name) || empty($year) || !is_numeric($year)) {
-            continue;
-        }
-
-        $year = (int)$year;
-        $currentYear = (int)date('Y');
-        
-        // Validate year range
-        if ($year < 2022 || $year > $currentYear) {
-            continue; // Skip invalid years
-        }
-
-        // Skip if student number already exists
-        if (Student::where('student_number', $student_number)->exists()) {
-            continue;
-        }
-
-        Student::create([
-            'student_number' => $student_number,
-            'student_name'   => $student_name,
-            'email'          => !empty($email) ? $email : null,
-            'year'           => $year,
+    {
+        $request->validate([
+            'file' => 'required|file',
         ]);
 
-        $inserted++;
-    }
+        $file = $request->file('file');
+        $spreadsheet = IOFactory::load($file->getPathname());
+        $rows = $spreadsheet->getActiveSheet()->toArray();
 
-    return redirect()->route('students.index')
-        ->with('success', "{$inserted} students imported successfully!");
-}
+        array_shift($rows); // skip header
+        $inserted = 0;
+
+        foreach ($rows as $row) {
+            $student_number = trim($row[0] ?? '');
+            $student_name   = trim($row[1] ?? '');
+            $email          = trim($row[2] ?? '');
+            $year           = trim($row[3] ?? '');
+
+            if (empty($student_number) || empty($student_name) || empty($year) || !is_numeric($year)) {
+                continue;
+            }
+
+            $year = (int)$year;
+            if ($year < 2022 || $year > (int)date('Y')) {
+                continue;
+            }
+
+            if (Student::where('student_number', $student_number)->exists()) {
+                continue;
+            }
+
+            Student::create([
+                'student_number' => $student_number,
+                'student_name'   => $student_name,
+                'email'          => $email ?: null,
+                'year'           => $year,
+            ]);
+
+            $inserted++;
+        }
+
+        return response()->json([
+            'message' => "{$inserted} students imported successfully!"
+        ]);
+    }
 
     /**
      * Bulk delete.
