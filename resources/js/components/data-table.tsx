@@ -604,7 +604,7 @@ export function AlumniTable() {
                         <div className="flex gap-2">
                             <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
                                 <PlusIcon className="h-4 w-4" />
-                                Add Student
+                                Add New
                             </Button>
                         </div>
 
