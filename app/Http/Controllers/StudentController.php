@@ -13,13 +13,10 @@ class StudentController extends Controller
      * Display all students.
      */
     public function index()
-    {
-        $students = Student::all();
+{
+    return response()->json(Student::all());
+}
 
-        return Inertia::render('Students/Index', [
-            'students' => $students,
-        ]);
-    }
 
     public function getAllStudents()
     {
@@ -127,12 +124,8 @@ class StudentController extends Controller
         $inserted++;
     }
 
-    // return redirect()->route('students.index')
-    //     ->with('success', "{$inserted} students imported successfully!");
-
-        return redirect('/students')
-            ->with('success', "{$inserted} students imported successfully!");
-
+    return redirect()->route('students.index')
+        ->with('success', "{$inserted} students imported successfully!");
 }
 
     /**
