@@ -186,15 +186,15 @@ Route::get('/api/programs', function() {
 Route::get('/programs', function () {
     return Program::select('id', 'name')->orderBy('name')->get();
 });
-
+//import alumni template
 Route::get('/alumni/template/download', [AlumniController::class, 'downloadTemplate'])
     ->name('alumni.template.download');
 
 
-
-Route::get('/students/download-template', function () {
-    return Excel::download(new StudentTemplateExport, 'student_template.xlsx');
-})->name('students.download-template');
+// Import students template
+Route::get('/students/template/download', [StudentController::class, 'downloadTemplate'])
+    ->name('students.template.download');
+    
 // 🧩 Include extra route files
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
