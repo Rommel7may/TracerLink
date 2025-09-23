@@ -81,9 +81,10 @@ export default function StudentIndex() {
         year: '',
     });
     //what happened to my code
-    React.useEffect(() => {
-        setStudentList(students);
-    }, [students]);
+   React.useEffect(() => {
+    const sortedStudents = [...students].sort((a, b) => (b.id || 0) - (a.id || 0));
+    setStudentList(sortedStudents);
+}, [students]);
 
     // Memoized export function
     const exportToExcel = React.useCallback((data: Student[]) => {
@@ -150,41 +151,43 @@ export default function StudentIndex() {
     };
 
     // Add/Edit Student
-    const handleSubmitStudent = async (e: React.FormEvent) => {
-        e.preventDefault();
+   const handleSubmitStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (addLoading) return;
+    setAddLoading(true);
 
-        if (addLoading) return;
-        setAddLoading(true);
+    try {
+        const url = editId ? `/students/${editId}` : '/students';
+        const method = editId ? 'put' : 'post';
+        const submitData = { ...data, year: data.year ? Number(data.year) : '' };
 
-        try {
-            const url = editId ? `/students/${editId}` : '/students';
-            const method = editId ? 'put' : 'post';
-            // Ensure year is sent as a number
-            const submitData = { ...data, year: data.year ? Number(data.year) : '' };
+        const response = await axios[method](url, submitData);
+        const studentData = response.data;
 
-            const response = await axios[method](url, submitData);
-            const studentData = response.data;
+        setStudentList((prev) => {
+            if (editId) {
+                return prev.map((s) => (s.id === editId ? studentData : s));
+            } else {
+                // Add to beginning and maintain sort order
+                const newList = [studentData, ...prev];
+                return newList.sort((a, b) => (b.id || 0) - (a.id || 0));
+            }
+        });
 
-            setStudentList((prev) => (
-                editId
-                    ? prev.map((s) => (s.id === editId ? studentData : s))
-                    : [studentData, ...prev] // Insert new at the top
-            ));
+        toast.success(`Student ${editId ? 'updated' : 'added'}!`, {
+            description: `${studentData.student_number} – ${studentData.student_name}`,
+        });
 
-            toast.success(`Student ${editId ? 'updated' : 'added'}!`, {
-                description: `${studentData.student_number} – ${studentData.student_name}`,
-            });
-
-            reset();
-            setEditId(null);
-            setShowModal(false);
-        } catch (err: any) {
-            console.error('Student operation error:', err);
-            toast.error(err.response?.data?.message || 'Email or Student number already exists.');
-        } finally {
-            setAddLoading(false);
-        }
-    };
+        reset();
+        setEditId(null);
+        setShowModal(false);
+    } catch (err: any) {
+        console.error('Student operation error:', err);
+        toast.error(err.response?.data?.message || 'Email or Student number already exists.');
+    } finally {
+        setAddLoading(false);
+    }
+};
 
     // Single delete
     // Single delete
@@ -435,7 +438,7 @@ const handleBulkDelete = async () => {
                             className="w-full gap-2 md:w-auto"
                         >
                             <PlusIcon className="h-4 w-4" />
-                            <span className="hidden sm:inline">Add Student</span>
+                            <span className="hidden sm:inline">Add New</span>
                         </Button>
                     </div>
 
@@ -522,7 +525,7 @@ const handleBulkDelete = async () => {
             <Dialog open={showModal} onOpenChange={setShowModal}>
                 <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl">{editId ? 'Edit Student' : 'Add New Student'}</DialogTitle>
+                        <DialogTitle className="text-xl">{editId ? 'Edit Student' : 'Add New Alumni'}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmitStudent} className="space-y-4">
                         <Input type="hidden" value={data.id} onChange={(e) => setData('id', e.target.value)} />
@@ -580,7 +583,7 @@ const handleBulkDelete = async () => {
                             </Button>
                             <Button type="submit" disabled={processing || addLoading} className="w-full sm:w-auto">
                                 {addLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                {editId ? 'Update Student' : 'Add Student'}
+                                {editId ? 'Update Student' : 'Add New'}
                                 {addLoading ? '...' : ''}
                             </Button>
                         </DialogFooter>
