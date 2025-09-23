@@ -78,7 +78,7 @@ export default function StudentIndex() {
         email: '',
         year: '',
     });
-
+    //what happened to my code
     React.useEffect(() => {
         setStudentList(students);
     }, [students]);
