@@ -415,7 +415,7 @@ export function AlumniTable() {
         setExportLoading(true);
 
         try {
-            // Kunin ang IDs ng lahat ng rows na current filtered
+            // Get currently filtered alumni IDs
             const filteredAlumni = table.getFilteredRowModel().rows;
             const filteredIds = filteredAlumni.map((row) => row.original.id).filter((id): id is number => id !== undefined);
 
@@ -621,11 +621,13 @@ export function AlumniTable() {
                     </div>
 
                     {/* Right side actions */}
-                    <div className="flex items-center gap-3">
-                        {/* Send Email */}
-                        <Dialog open={sendEmailOpen} onOpenChange={setSendEmailOpen}>
-                            <DialogTrigger asChild>
-                                {/* <Button 
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+    {/* Left section - Add/Send Email */}
+    <div className="flex items-center gap-3">
+        {/* Send Email */}
+        <Dialog open={sendEmailOpen} onOpenChange={setSendEmailOpen}>
+            <DialogTrigger asChild>
+                {/* <Button 
                   variant="outline" 
                   className="flex items-center"
                   disabled={selectedCount === 0}
@@ -633,57 +635,75 @@ export function AlumniTable() {
                   <UsersRound className="mr-2 h-4 w-4" />
                   Send Email
                 </Button> */}
-                            </DialogTrigger>
+            </DialogTrigger>
 
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Send Email to Selected Alumni</DialogTitle>
-                                    <DialogDescription>
-                                        This will send email to <b>{selectedCount}</b> selected alumni.
-                                    </DialogDescription>
-                                </DialogHeader>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Send Email to Selected Alumni</DialogTitle>
+                    <DialogDescription>
+                        This will send email to <b>{selectedCount}</b> selected alumni.
+                    </DialogDescription>
+                </DialogHeader>
 
-                                <DialogFooter className="pt-4">
-                                    <Button onClick={handleSendEmails} disabled={sendEmailLoading}>
-                                        {sendEmailLoading ? 'Sending...' : 'Send Now'}
-                                    </Button>
-                                    <Button variant="ghost" onClick={() => setSendEmailOpen(false)} disabled={sendEmailLoading}>
-                                        Cancel
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                <DialogFooter className="pt-4">
+                    <Button onClick={handleSendEmails} disabled={sendEmailLoading}>
+                        {sendEmailLoading ? 'Sending...' : 'Send Now'}
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        onClick={() => setSendEmailOpen(false)}
+                        disabled={sendEmailLoading}
+                    >
+                        Cancel
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    </div>
 
-                        {/* Export */}
-                        <Button variant="outline" onClick={() => setImportOpen(true)} className="flex items-center gap-2">
-                            <DownloadIcon className="mr-2 h-4 w-4 text-green-500" />
-                            Import
-                        </Button>
-                        <Button variant="outline" onClick={handleExport} disabled={exportLoading}>
-                            <Upload className="mr-2 h-4 w-4 text-blue-500" />
-                            {exportLoading ? 'Exporting...' : 'Export'}
-                        </Button>
+    {/* Right section - Import/Export/Rows */}
+    <div className="flex flex-wrap items-center gap-3 justify-end">
+        {/* Import */}
+        <Button
+            variant="outline"
+            onClick={() => setImportOpen(true)}
+            className="flex items-center gap-2"
+        >
+            <DownloadIcon className="mr-2 h-4 w-4 text-green-500" />
+            Import
+        </Button>
 
-                        {/* Rows per page */}
-                        <Select
-                            value={pageSize.toString()}
-                            onValueChange={(value) => {
-                                setPageSize(Number(value));
-                                table.setPageSize(Number(value));
-                            }}
-                        >
-                            <SelectTrigger className="w-20">
-                                <SelectValue placeholder={pageSize} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="10">10</SelectItem>
-                                <SelectItem value="20">20</SelectItem>
-                                <SelectItem value="50">50</SelectItem>
-                                <SelectItem value="100">100</SelectItem>
-                                {/* <SelectItem value="1000000">All</SelectItem> */}
-                            </SelectContent>
-                        </Select>
-                    </div>
+        {/* Export */}
+        <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={exportLoading}
+        >
+            <Upload className="mr-2 h-4 w-4 text-blue-500" />
+            {exportLoading ? 'Exporting...' : 'Export'}
+        </Button>
+
+        {/* Rows per page */}
+        <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+                setPageSize(Number(value));
+                table.setPageSize(Number(value));
+            }}
+        >
+            <SelectTrigger className="w-20">
+                <SelectValue placeholder={pageSize} />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+        </Select>
+    </div>
+</div>
+
                 </div>
             </div>
 
