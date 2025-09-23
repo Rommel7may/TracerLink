@@ -69,8 +69,8 @@ export function SectionCards({ programs = [] }: { programs: Program[] }) {
                     {program.name}
                   </CardTitle>
                 </div>
-                <div className="p-2 rounded-lg  dark:bg-zinc-800 dark:group-hover:bg-blue-900/30 transition-colors">
-                </div>
+                {/* <div className="p-2 rounded-lg  dark:bg-zinc-800 dark:group-hover:bg-blue-900/30 transition-colors">
+                </div> */}
               </div>
             </CardHeader>
             <CardFooter className="text-xl font-bold text-blue-600 dark:text-blue-400 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50 py-3">

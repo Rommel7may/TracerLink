@@ -119,7 +119,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('/data', DataController::class);
     Route::resource('/jobpost', JobPostController::class);
     Route::resource('/program', ProgramController::class);
-    Route::resource('', TestController::class);
+    Route::resource('/test', TestController::class);
 
     // 👈 Employability Route ✅
     Route::get('/employability', [EmployabilityController::class, 'index'])->name('employability.index');
