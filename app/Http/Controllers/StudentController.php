@@ -127,8 +127,12 @@ class StudentController extends Controller
         $inserted++;
     }
 
-    return redirect()->route('students.index')
-        ->with('success', "{$inserted} students imported successfully!");
+    // return redirect()->route('students.index')
+    //     ->with('success', "{$inserted} students imported successfully!");
+
+        return redirect('/students')
+            ->with('success', "{$inserted} students imported successfully!");
+
 }
 
     /**
