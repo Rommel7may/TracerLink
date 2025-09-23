@@ -8,6 +8,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use App\Events\AlumniCreated;
+use App\Exports\AlumniTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 class AlumniController extends Controller
 {
     // ✅ Dashboard chart data per graduation year
@@ -197,5 +199,10 @@ class AlumniController extends Controller
 
         return response()->json(['message' => '🗑️ Alumni deleted successfully.']);
     }
+
+     public function downloadTemplate()
+    {
+        return Excel::download(new AlumniTemplateExport, 'alumni_template.xlsx');
+    }   
     
 }

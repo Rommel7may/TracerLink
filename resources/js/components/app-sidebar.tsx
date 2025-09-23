@@ -57,15 +57,18 @@ const primaryNavItems: NavItem[] = [
 //bot
 const secondaryNavItems: NavItem[] = [
   {
-    title: 'Manage Students',
+    title: 'Students',
     href: '/send',
     icon: GraduationCap,
-  },
-  {
-    title: 'Manage Job Posts',
+  }, 
+];
+
+const thirdNavItems: NavItem[] = [
+ {
+    title: 'Job Posts',
     href: '/jobpost',
     icon: FileText,
-  },  
+  }, 
 ];
 
 const footerNavItems: NavItem[] = [
@@ -92,8 +95,11 @@ export function AppSidebar() {
         <SidebarGroupLabel>Overview</SidebarGroupLabel>
         <NavMain items={primaryNavItems} />
         {/* Group 2 */}
-         <SidebarGroupLabel>Mailing job & form</SidebarGroupLabel>
+         <SidebarGroupLabel>Student Management</SidebarGroupLabel>
         <NavMain items={secondaryNavItems} />
+        {/* Group 3 */}
+        <SidebarGroupLabel>Job Post Management</SidebarGroupLabel>
+        <NavMain items={thirdNavItems} />
       </SidebarContent>
 
       <SidebarFooter>

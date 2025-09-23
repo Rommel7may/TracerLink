@@ -7,6 +7,7 @@ use App\Models\Alumni;
 use App\Models\Program;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
+use App\Exports\AlumniTemplateExport;
 
 class AlumniImportController extends Controller
 {
