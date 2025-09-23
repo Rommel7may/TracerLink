@@ -26,8 +26,8 @@ use App\Http\Controllers\{
     EmployabilityController, 
     TestController,
 };
-
-
+use App\Exports\StudentTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Events\TestEvent;
 
 // 🌐 Public Welcome Page
@@ -187,7 +187,14 @@ Route::get('/programs', function () {
     return Program::select('id', 'name')->orderBy('name')->get();
 });
 
+Route::get('/alumni/template/download', [AlumniController::class, 'downloadTemplate'])
+    ->name('alumni.template.download');
 
+
+
+Route::get('/students/download-template', function () {
+    return Excel::download(new StudentTemplateExport, 'student_template.xlsx');
+})->name('students.download-template');
 // 🧩 Include extra route files
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

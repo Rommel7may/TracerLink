@@ -69,7 +69,6 @@ export function AlumniTable() {
     const [globalFilter, setGlobalFilter] = React.useState<string>('');
 
     // Loading states for all actions
-    const [importProgress, setImportProgress] = React.useState(0);
     const [deleteLoading, setDeleteLoading] = React.useState<number | null>(null);
     const [bulkDeleteLoading, setBulkDeleteLoading] = React.useState(false);
     const [sendEmailLoading, setSendEmailLoading] = React.useState(false);
@@ -200,32 +199,22 @@ export function AlumniTable() {
         }
 
         setImportLoading(true);
-        setImportProgress(0); // Reset progress
-
         const formData = new FormData();
         formData.append('file', importFile);
 
         try {
             await axios.post('/alumni/import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                onUploadProgress: (progressEvent) => {
-                    if (progressEvent.total) {
-                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                        setImportProgress(percentCompleted);
-                    }
-                },
             });
 
             toast.success('Alumni imported successfully ✅');
             fetchAlumni();
             setImportOpen(false);
             setImportFile(null);
-            setImportProgress(0); // Reset progress after completion
         } catch (err: any) {
             toast.error('Import failed ❌', {
                 description: err?.response?.data?.message || 'Something went wrong.',
             });
-            setImportProgress(0); // Reset progress on error
         } finally {
             setImportLoading(false);
         }
@@ -591,6 +580,27 @@ export function AlumniTable() {
                 {/* Action Buttons */}
                 <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-3">
+                        {/* Combined New button */}
+                        {/* <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <PlusIcon className="h-4 w-4" />
+                  New
+                  <ChevronDownIcon className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => setShowAddModal(true)}>
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  Add Student
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setImportOpen(true)}>
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  Import Alumni
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu> */}
+
                         <div className="flex gap-2">
                             <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
                                 <PlusIcon className="h-4 w-4" />
@@ -681,7 +691,7 @@ export function AlumniTable() {
             <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Confirm Delete?</DialogTitle>
+                        <DialogTitle>Confirm Bulk Delete</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to delete {selectedCount} selected record(s)? This action cannot be undone.
                         </DialogDescription>
@@ -753,44 +763,23 @@ export function AlumniTable() {
                     <DialogHeader>
                         <DialogTitle>Import Alumni</DialogTitle>
                         <DialogDescription>Upload an Excel/CSV file containing alumni data.</DialogDescription>
+                        <DialogFooter className="flex flex-col items-center space-y-2 text-center">
+                            <p className="text-sm text-gray-600">Please ensure your Excel file matches the required format. You can&nbsp;</p>
+                            <Button
+                                className="text-blue-600 underline"
+                                variant="link"
+                                onClick={() => (window.location.href = route('alumni.template.download'))}
+                            >
+                                download Template
+                            </Button>
+                        </DialogFooter>
                     </DialogHeader>
-
-                    <div className="space-y-4">
-                        <Input
-                            type="file"
-                            accept=".xlsx,.xls,.csv"
-                            onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                            disabled={importLoading}
-                        />
-
-                        {importLoading && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span>Uploading...</span>
-                                    <span>{importProgress}%</span>
-                                </div>
-                                <div className="h-2.5 w-full rounded-full bg-gray-200">
-                                    <div
-                                        className="h-2.5 rounded-full bg-blue-600 transition-all duration-300"
-                                        style={{ width: `${importProgress}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
+                    <Input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
                     <DialogFooter>
                         <Button onClick={handleImport} disabled={!importFile || importLoading}>
-                            {importLoading ? `Uploading (${importProgress}%)` : 'Upload'}
+                            {importLoading ? 'Uploading...' : 'Upload'}
                         </Button>
-                        <Button
-                            variant="ghost"
-                            onClick={() => {
-                                setImportOpen(false);
-                                setImportProgress(0);
-                            }}
-                            disabled={importLoading}
-                        >
+                        <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importLoading}>
                             Cancel
                         </Button>
                     </DialogFooter>

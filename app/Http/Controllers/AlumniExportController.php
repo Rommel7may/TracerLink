@@ -15,14 +15,13 @@ class AlumniExportController extends Controller
 {
     /**
      * Export selected or all alumni to Excel
-     * Frontend should send: selectedIds = [1,2,3] (optional)
      */
     public function export(Request $request)
     {
         try {
             $selectedIds = $request->input('selectedIds', []);
 
-            // ✅ Query alumni: filter by selected IDs if provided
+            // ✅ Query alumni
             $query = Alumni::with('program');
             if (!empty($selectedIds)) {
                 $query->whereIn('id', $selectedIds);
@@ -48,7 +47,6 @@ class AlumniExportController extends Controller
                 'Middle Initial',
                 'Sex',
                 'Present Address',
-                // 'Active Email',
                 'Contact Number',
                 'Graduation Year',
                 'Employment Status',
@@ -62,12 +60,50 @@ class AlumniExportController extends Controller
                 'Instruction Rating',
             ];
 
-            $sheet->fromArray($headers, null, 'A1');
+            // Insert 2 rows for University Heading
+            $sheet->insertNewRowBefore(1, 2);
 
-            // 📋 Populate Rows
-            $rowIndex = 2;
+            $lastCol = chr(64 + count($headers)); // e.g., S
+            $sheet->mergeCells("A1:{$lastCol}1");
+            $sheet->mergeCells("A2:{$lastCol}2");
+
+            // Set University heading
+            $sheet->setCellValue('A1', 'Pampanga State University');
+            $sheet->setCellValue('A2', 'Lubao, Campus');
+
+            // Style heading
+            $sheet->getStyle("A1:A2")->applyFromArray([
+                'font' => [
+                    'name' => 'Times New Roman',
+                    'size' => 14,
+                    'bold' => true,
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical'   => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // Place headers in row 3
+            $sheet->fromArray($headers, null, 'A3');
+
+            // Style header row
+            $sheet->getStyle("A3:{$lastCol}3")->applyFromArray([
+                'font' => ['bold' => true],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'D9E1F2'],
+                ],
+                'borders' => [
+                    'allBorders' => ['borderStyle' => Border::BORDER_THIN],
+                ],
+            ]);
+
+            // 📋 Populate Data starting at row 4
+            $rowIndex = 4;
             foreach ($alumni as $a) {
-                $sheet->fromArray([
+                $sheet->fromArray([[
                     $a->student_number,
                     $a->email,
                     $a->program ? $a->program->name : null,
@@ -87,31 +123,17 @@ class AlumniExportController extends Controller
                     $a->related_to_course,
                     $a->consent ? 'Yes' : 'No',
                     $a->instruction_rating,
-                ], null, 'A' . $rowIndex++);
+                ]], null, 'A' . $rowIndex++);
             }
-
-            // ✨ Header styling
-            $lastCol = chr(64 + count($headers)); // e.g., S
-            $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
-                'font' => ['bold' => true],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'D9E1F2'],
-                ],
-                'borders' => [
-                    'allBorders' => ['borderStyle' => Border::BORDER_THIN],
-                ],
-            ]);
 
             // 🔄 Auto-size columns
             foreach (range('A', $lastCol) as $col) {
                 $sheet->getColumnDimension($col)->setAutoSize(true);
             }
 
-            // 📏 Apply border to all cells
+            // 📏 Borders for all content (headers + data)
             $lastRow = $rowIndex - 1;
-            $sheet->getStyle("A1:{$lastCol}{$lastRow}")->applyFromArray([
+            $sheet->getStyle("A3:{$lastCol}{$lastRow}")->applyFromArray([
                 'borders' => [
                     'allBorders' => ['borderStyle' => Border::BORDER_THIN],
                 ],

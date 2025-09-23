@@ -63,7 +63,7 @@ export const AlumniForm = memo(function AlumniForm({
     mode = 'create',
     id,
     student_number = '',
-    email = '', 
+    email = '',
     program_id = null,
     last_name = '',
     given_name = '',
@@ -139,20 +139,21 @@ export const AlumniForm = memo(function AlumniForm({
     );
 
     const handleEmploymentStatusChange = useCallback(
-    (val: string) => {
-        setData('employment_status', val);
-        if (val !== 'Employed') { // ✅ Use exact match with your SelectItem value
-            // Clear employment-related fields
-            setData('company_name', '');
-            setData('work_position', '');
-            setData('sector', '');
-            setData('work_location', '');
-            setData('employer_classification', '');
-            setData('related_to_course', '');
-        }
-    },
-    [setData],
-);
+        (val: string) => {
+            setData('employment_status', val);
+            if (val !== 'Employed') {
+                // ✅ Use exact match with your SelectItem value
+                // Clear employment-related fields
+                setData('company_name', '');
+                setData('work_position', '');
+                setData('sector', '');
+                setData('work_location', '');
+                setData('employer_classification', '');
+                setData('related_to_course', '');
+            }
+        },
+        [setData],
+    );
     const handleConsentChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             setData('consent', e.target.checked);
@@ -198,7 +199,6 @@ export const AlumniForm = memo(function AlumniForm({
             }
 
             try {
-                
                 const isEmployed = data.employment_status === 'employed';
 
                 // Clear fields if not employed
@@ -304,20 +304,9 @@ export const AlumniForm = memo(function AlumniForm({
                     <CardTitle className="text-center text-3xl font-bold text-primary">
                         {isEditing ? 'Update Alumni Record' : 'Pampanga State U - LC Tracerlink'}
                     </CardTitle>
-                    <div className="text-start text-muted-foreground space-y-1">
-  <p>
-    This form collects your basic alumni details such as name, contact information, program,
-    year of graduation, and employment status.
-  </p>
-  <p>
-    The information will be stored in the university’s alumni database to keep records updated.
-  </p><br /><br />
-  <p className="font-medium">
-    {isEditing ? 'Update your information' : 'Please complete all required fields (*)'}
-  </p>
-</div>
-
-
+                    <div className="space-y-1 text-start text-muted-foreground">
+                        <p className="font-medium">{isEditing ? 'Update your information' : 'Please complete all required fields (*)'}</p>
+                    </div>
                 </CardHeader>
 
                 <CardContent className="p-6">
@@ -397,7 +386,7 @@ export const AlumniForm = memo(function AlumniForm({
                                     />
                                 </FieldWrapper>
 
-                                    <FieldWrapper label="Sex" required error={errors.sex}>
+                                <FieldWrapper label="Sex" required error={errors.sex}>
                                     <Select value={data.sex} onValueChange={handleSelectChange('sex')}>
                                         <SelectTrigger className={`h-11 ${errors.sex ? 'border-red-500' : ''}`}>
                                             <SelectValue placeholder="Sex" />
@@ -415,7 +404,6 @@ export const AlumniForm = memo(function AlumniForm({
                         <div className="space-y-4">
                             <h3 className="border-b pb-2 text-xl font-semibold text-foreground">Academic Background</h3>
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        
                                 <FieldWrapper label="Program Taken" required error={errors.program_id}>
                                     <Select value={data.program_id || ''} onValueChange={handleSelectChange('program_id')}>
                                         <SelectTrigger className={`h-11 ${errors.program_id ? 'border-red-500' : ''}`}>
@@ -525,20 +513,22 @@ export const AlumniForm = memo(function AlumniForm({
                                             </Select>
                                         </FieldWrapper>
 
-                                           <FieldWrapper label="Your employment classifacation" error={errors.employer_classification}>
-                                <Select value={data.employer_classification || ''} onValueChange={handleSelectChange('employer_classification')}>
-                                    <SelectTrigger className={`h-11 ${errors.employer_classification ? 'border-red-500' : ''}`}>
-                                        <SelectValue placeholder="Select option" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="local">Local Company in PH</SelectItem>
-                                        <SelectItem value="foreign-ph">Foreign Company in PH</SelectItem>
-                                        <SelectItem value="foreign-abroad">Foreign Company Abroad</SelectItem>
-                                        <SelectItem value="self-employed">I Am Self Employed</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </FieldWrapper>
-            
+                                        <FieldWrapper label="Your employment classifacation" error={errors.employer_classification}>
+                                            <Select
+                                                value={data.employer_classification || ''}
+                                                onValueChange={handleSelectChange('employer_classification')}
+                                            >
+                                                <SelectTrigger className={`h-11 ${errors.employer_classification ? 'border-red-500' : ''}`}>
+                                                    <SelectValue placeholder="Select option" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="local">Local Company in PH</SelectItem>
+                                                    <SelectItem value="foreign-ph">Foreign Company in PH</SelectItem>
+                                                    <SelectItem value="foreign-abroad">Foreign Company Abroad</SelectItem>
+                                                    <SelectItem value="self-employed">I Am Self Employed</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </FieldWrapper>
                                     </>
                                 )}
                             </div>

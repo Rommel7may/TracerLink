@@ -102,7 +102,6 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
       setTimeRemaining(300); // 5 minutes in seconds
       return;
     }
-    
     post(route('login'), {
       onFinish: () => reset('password'),
       onError: () => {

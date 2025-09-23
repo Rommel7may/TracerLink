@@ -25,7 +25,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import axios from 'axios';
-import { ArrowUp, DownloadCloudIcon, DownloadIcon, FileUp, Loader2, Menu, MoreHorizontal, PlusIcon, Search, Trash, Upload, X } from 'lucide-react';
+import { DownloadIcon, FileUp, Loader2, Menu, MoreHorizontal, PlusIcon, Search, Trash, Upload, X } from 'lucide-react';
 import * as React from 'react';
 import { toast, Toaster } from 'sonner';
 
@@ -58,14 +58,25 @@ export default function StudentIndex() {
     const [showBulkDeleteModal, setShowBulkDeleteModal] = React.useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
     const [importLoading, setImportLoading] = React.useState(false);
-    const [importProgress, setImportProgress] = React.useState(0);
+    const handleDownloadTemplate = async () => {
+        try {
+            const response = await axios.get('/students/download-template', {
+                responseType: 'blob', // important for binary files
+            });
 
+            const blob = new Blob([response.data], { type: response.headers['content-type'] });
+            saveAs(blob, 'student_template.xlsx'); // force download
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.error('Failed to download template ❌');
+        }
+    };
     const { data, setData, reset, processing } = useForm({
         id: '',
         student_number: '',
         student_name: '',
         email: '',
-        year: new Date().getFullYear().toString(),
+        year: '',
     });
 
     React.useEffect(() => {
@@ -116,32 +127,21 @@ export default function StudentIndex() {
         if (!excelFile) return;
 
         setImportLoading(true);
-        setImportProgress(0);
         const formData = new FormData();
         formData.append('file', excelFile);
 
         try {
             const res = await axios.post('/students/import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                onUploadProgress: (progressEvent) => {
-                    if (progressEvent.total) {
-                        const percentCompleted = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total
-                        );
-                        setImportProgress(percentCompleted);
-                    }
-                },
             });
 
             toast.success(res.data.message || 'Import successful!');
             setShowUploadModal(false);
             router.reload();
             setExcelFile(null);
-            setImportProgress(0);
         } catch (err: any) {
             console.error('Import error:', err);
             toast.error(err.response?.data?.message || 'Import failed!');
-            setImportProgress(0);
         } finally {
             setImportLoading(false);
         }
@@ -274,7 +274,7 @@ export default function StudentIndex() {
                                             student_number: student.student_number,
                                             student_name: student.student_name,
                                             email: student.email || '',
-                                            year: student.year?.toString() || new Date().getFullYear().toString(),
+                                            year: student.year?.toString() || '',
                                         });
                                         setShowModal(true);
                                     }}
@@ -429,7 +429,7 @@ export default function StudentIndex() {
                     className={`mt-4 flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center md:mt-0 md:w-auto ${isMobileMenuOpen ? 'block' : 'hidden md:flex'}`}
                 >
                     <Button onClick={() => setShowUploadModal(true)} className="w-full gap-2 md:w-auto" variant="outline">
-                        <DownloadIcon  className="h-4 w-4 text-green-500" />
+                        <DownloadIcon className="h-4 w-4 text-green-500" />
                         <span className="">Import Excel</span>
                     </Button>
                     <Button variant="outline" onClick={() => exportToExcel(currentData)} className="w-full gap-2 sm:w-auto">
@@ -568,6 +568,16 @@ export default function StudentIndex() {
                 <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle className="text-xl">Import Students from Excel</DialogTitle>
+                        <DialogFooter className="flex flex-col items-start gap-2">
+                            <p className="text-sm text-gray-600">Please ensure your Excel file matches the required format. You can&nbsp;</p>
+                            <Button
+                                onClick={handleDownloadTemplate} // ✅ blob download function
+                                className="w-full gap-2 font-medium md:w-auto"
+                                variant="link"
+                            >
+                                <span className="text-blue-700 underline">download Excel Template</span>
+                            </Button>
+                        </DialogFooter>
                     </DialogHeader>
                     <form onSubmit={handleExcelUpload} className="space-y-4">
                         <div className="space-y-2">
@@ -581,39 +591,13 @@ export default function StudentIndex() {
                             />
                             <p className="text-sm text-gray-500">Supported formats: .xlsx, .xls</p>
                         </div>
-
-                        {/* Progress Bar */}
-                        {importLoading && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span>Uploading...</span>
-                                    <span>{importProgress}%</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div 
-                                        className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                                        style={{ width: `${importProgress}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-
                         <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
                             <Button type="button" variant="outline" onClick={() => setShowUploadModal(false)} className="w-full sm:w-auto">
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={!excelFile || importLoading} className="w-full sm:w-auto">
-                                {importLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Uploading ({importProgress}%)
-                                    </>
-                                ) : (
-                                    <>
-                                        <FileUp className="mr-2 h-4 w-4" />
-                                        Upload File
-                                    </>
-                                )}
+                                {importLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
+                                {importLoading ? 'Importing...' : 'Upload File'}
                             </Button>
                         </DialogFooter>
                     </form>
