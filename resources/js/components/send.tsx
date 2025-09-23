@@ -22,10 +22,25 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
+    SortingState,
     useReactTable,
 } from '@tanstack/react-table';
 import axios from 'axios';
-import { DownloadIcon, FileUp, Loader2, Menu, MoreHorizontal, PlusIcon, Search, Trash, Upload, X } from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronsUpDown,
+    ChevronUp,
+    DownloadIcon,
+    FileUp,
+    Loader2,
+    Menu,
+    MoreHorizontal,
+    PlusIcon,
+    Search,
+    Trash,
+    Upload,
+    X,
+} from 'lucide-react';
 import * as React from 'react';
 import { toast, Toaster } from 'sonner';
 
@@ -60,6 +75,7 @@ export default function StudentIndex() {
     const [importLoading, setImportLoading] = React.useState(false);
     const [deleteLoading, setDeleteLoading] = React.useState(false);
     const [bulkDeleteLoading, setBulkDeleteLoading] = React.useState(false);
+    const [sorting, setSorting] = React.useState<SortingState>([]);
     const handleDownloadTemplate = async () => {
         try {
             const response = await axios.get('/students/download-template', {
@@ -81,10 +97,10 @@ export default function StudentIndex() {
         year: '',
     });
     //what happened to my code
-   React.useEffect(() => {
-    const sortedStudents = [...students].sort((a, b) => (b.id || 0) - (a.id || 0));
-    setStudentList(sortedStudents);
-}, [students]);
+    React.useEffect(() => {
+        const sortedStudents = [...students].sort((a, b) => (b.id || 0) - (a.id || 0));
+        setStudentList(sortedStudents);
+    }, [students]);
 
     // Memoized export function
     const exportToExcel = React.useCallback((data: Student[]) => {
@@ -151,90 +167,90 @@ export default function StudentIndex() {
     };
 
     // Add/Edit Student
-   const handleSubmitStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (addLoading) return;
-    setAddLoading(true);
+    const handleSubmitStudent = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (addLoading) return;
+        setAddLoading(true);
 
-    try {
-        const url = editId ? `/students/${editId}` : '/students';
-        const method = editId ? 'put' : 'post';
-        const submitData = { ...data, year: data.year ? Number(data.year) : '' };
+        try {
+            const url = editId ? `/students/${editId}` : '/students';
+            const method = editId ? 'put' : 'post';
+            const submitData = { ...data, year: data.year ? Number(data.year) : '' };
 
-        const response = await axios[method](url, submitData);
-        const studentData = response.data;
+            const response = await axios[method](url, submitData);
+            const studentData = response.data;
 
-        setStudentList((prev) => {
-            if (editId) {
-                return prev.map((s) => (s.id === editId ? studentData : s));
-            } else {
-                // Add to beginning and maintain sort order
-                const newList = [studentData, ...prev];
-                return newList.sort((a, b) => (b.id || 0) - (a.id || 0));
-            }
-        });
+            setStudentList((prev) => {
+                if (editId) {
+                    return prev.map((s) => (s.id === editId ? studentData : s));
+                } else {
+                    // Add to beginning and maintain sort order
+                    const newList = [studentData, ...prev];
+                    return newList.sort((a, b) => (b.id || 0) - (a.id || 0));
+                }
+            });
 
-        toast.success(`Student ${editId ? 'updated' : 'added'}!`, {
-            description: `${studentData.student_number} – ${studentData.student_name}`,
-        });
+            toast.success(`Student ${editId ? 'updated' : 'added'}!`, {
+                description: `${studentData.student_number} – ${studentData.student_name}`,
+            });
 
-        reset();
-        setEditId(null);
-        setShowModal(false);
-    } catch (err: any) {
-        console.error('Student operation error:', err);
-        toast.error(err.response?.data?.message || 'Email or Student number already exists.');
-    } finally {
-        setAddLoading(false);
-    }
-};
+            reset();
+            setEditId(null);
+            setShowModal(false);
+        } catch (err: any) {
+            console.error('Student operation error:', err);
+            toast.error(err.response?.data?.message || 'Email or Student number already exists.');
+        } finally {
+            setAddLoading(false);
+        }
+    };
 
     // Single delete
     // Single delete
-const handleDelete = async () => {
-    if (!deleteId || deleteLoading) return;
-    
-    setDeleteLoading(true);
+    const handleDelete = async () => {
+        if (!deleteId || deleteLoading) return;
 
-    try {
-        await axios.delete(`/students/${deleteId}`);
-        setStudentList((prev) => prev.filter((s) => s.id !== deleteId));
-        toast.success('Student deleted!');
-        setShowDeleteModal(false);
-        setDeleteId(null);
-    } catch (err) {
-        console.error('Delete error:', err);
-        toast.error('Failed to delete student ❌');
-    } finally {
-        setDeleteLoading(false);
-    }
-};
+        setDeleteLoading(true);
+
+        try {
+            await axios.delete(`/students/${deleteId}`);
+            setStudentList((prev) => prev.filter((s) => s.id !== deleteId));
+            toast.success('Student deleted!');
+            setShowDeleteModal(false);
+            setDeleteId(null);
+        } catch (err) {
+            console.error('Delete error:', err);
+            toast.error('Failed to delete student ❌');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
 
     // Bulk delete
     // Bulk delete
-const handleBulkDelete = async () => {
-    const selectedIds = table
-        .getSelectedRowModel()
-        .rows.map((r) => r.original.id)
-        .filter(Boolean) as number[];
+    const handleBulkDelete = async () => {
+        const selectedIds = table
+            .getSelectedRowModel()
+            .rows.map((r) => r.original.id)
+            .filter(Boolean) as number[];
 
-    if (!selectedIds.length || bulkDeleteLoading) return;
-    
-    setBulkDeleteLoading(true);
+        if (!selectedIds.length || bulkDeleteLoading) return;
 
-    try {
-        await axios.post('/students/bulk-delete', { ids: selectedIds });
-        setStudentList((prev) => prev.filter((s) => !selectedIds.includes(s.id!)));
-        toast.success('Selected students deleted!');
-        setRowSelection({});
-        setShowBulkDeleteModal(false);
-    } catch (err) {
-        console.error('Bulk delete error:', err);
-        toast.error('Failed to delete selected students ❌');
-    } finally {
-        setBulkDeleteLoading(false);
-    }
-};
+        setBulkDeleteLoading(true);
+
+        try {
+            await axios.post('/students/bulk-delete', { ids: selectedIds });
+            setStudentList((prev) => prev.filter((s) => !selectedIds.includes(s.id!)));
+            toast.success('Selected students deleted!');
+            setRowSelection({});
+            setShowBulkDeleteModal(false);
+        } catch (err) {
+            console.error('Bulk delete error:', err);
+            toast.error('Failed to delete selected students ❌');
+        } finally {
+            setBulkDeleteLoading(false);
+        }
+    };
 
     // Table columns
     const columns: ColumnDef<Student>[] = React.useMemo(
@@ -257,27 +273,33 @@ const handleBulkDelete = async () => {
                         onChange={row.getToggleSelectedHandler()}
                     />
                 ),
+                enableSorting: false, // Disable sorting for select column
             },
             {
                 accessorKey: 'student_number',
                 header: 'STUDENT NUMBER',
+                // Enable sorting for this column
             },
             {
                 accessorKey: 'student_name',
                 header: 'STUDENT FULL NAME',
+                // Enable sorting for this column
             },
             {
                 accessorKey: 'email',
                 header: 'EMAIL',
+                // Enable sorting for this column
             },
             {
                 accessorKey: 'year',
                 header: 'YEAR',
+                // Enable sorting for this column
             },
             {
                 id: 'actions',
                 header: 'Action',
                 enableHiding: false,
+                enableSorting: false, // Disable sorting for actions column
                 cell: ({ row }) => {
                     const student = row.original;
 
@@ -325,6 +347,7 @@ const handleBulkDelete = async () => {
         ],
         [],
     );
+
     const columnFilters = React.useMemo(() => {
         if (yearFilter && yearFilter !== 'all' && yearFilter !== 'unknown') {
             return [{ id: 'year', value: Number(yearFilter) }];
@@ -341,12 +364,13 @@ const handleBulkDelete = async () => {
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         onRowSelectionChange: setRowSelection,
-
+        onSortingChange: setSorting,
         enableRowSelection: true,
         state: {
             rowSelection,
             globalFilter,
             columnFilters,
+            sorting,
         },
 
         globalFilterFn: (row, columnId, filterValue) => {
@@ -474,16 +498,38 @@ const handleBulkDelete = async () => {
             <div className="overflow-x-auto rounded-lg border shadow-sm">
                 <Table>
                     <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="font-semibold whitespace-nowrap">
-                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
+    {table.getHeaderGroups().map((headerGroup) => (
+        <TableRow key={headerGroup.id}>
+            {headerGroup.headers.map((header) => {
+                const isNameColumn = header.column.columnDef.header === 'STUDENT FULL NAME';
+                
+                return (
+                    <TableHead
+                        key={header.id}
+                        className={`font-semibold whitespace-nowrap ${isNameColumn ? 'cursor-pointer' : ''}`}
+                        onClick={isNameColumn ? header.column.getToggleSortingHandler() : undefined}
+                    >
+                        <div className="flex items-center gap-1">
+                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                            {/* Only show sorting indicators for name column */}
+                            {isNameColumn && (
+                                <>
+                                    {header.column.getIsSorted() === 'asc' ? (
+                                        <ChevronUp className="h-4 w-4" />
+                                    ) : header.column.getIsSorted() === 'desc' ? (
+                                        <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                        <ChevronsUpDown className="h-4 w-4 text-gray-300" />
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </TableHead>
+                );
+            })}
+        </TableRow>
+    ))}
+</TableHeader>
                     <TableBody>
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
@@ -632,82 +678,75 @@ const handleBulkDelete = async () => {
                 </DialogContent>
             </Dialog>
 
-
             {/* Single Delete Confirmation Modal */}
-<Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
-        <DialogHeader>
-            <DialogTitle className="text-xl">Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete this student? This action cannot be undone.</DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
-            <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowDeleteModal(false)} 
-                disabled={deleteLoading}
-                className="w-full sm:w-auto"
-            >
-                Cancel
-            </Button>
-            <Button 
-                type="button" 
-                variant="destructive" 
-                onClick={handleDelete} 
-                disabled={deleteLoading}
-                className="w-full sm:w-auto"
-            >
-                {deleteLoading ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Deleting...
-                    </>
-                ) : (
-                    'Delete'
-                )}
-            </Button>
-        </DialogFooter>
-    </DialogContent>
-</Dialog>
+            <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl">Confirm Deletion</DialogTitle>
+                        <DialogDescription>Are you sure you want to delete this student? This action cannot be undone.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowDeleteModal(false)}
+                            disabled={deleteLoading}
+                            className="w-full sm:w-auto"
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={handleDelete} disabled={deleteLoading} className="w-full sm:w-auto">
+                            {deleteLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                'Delete'
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-{/* Bulk Delete Confirmation Modal */}
-<Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
-    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
-        <DialogHeader>
-            <DialogTitle className="text-xl">Confirm Bulk Deletion</DialogTitle>
-            <DialogDescription>
-                Are you sure you want to delete {selectedCount} selected students? This action cannot be undone.
-            </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
-            <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowBulkDeleteModal(false)} 
-                disabled={bulkDeleteLoading}
-                className="w-full sm:w-auto"
-            >
-                Cancel
-            </Button>
-            <Button 
-                type="button" 
-                variant="destructive" 
-                onClick={handleBulkDelete} 
-                disabled={bulkDeleteLoading}
-                className="w-full sm:w-auto"
-            >
-                {bulkDeleteLoading ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Deleting...
-                    </>
-                ) : (
-                    `Delete ${selectedCount} records`
-                )}
-            </Button>
-        </DialogFooter>
-    </DialogContent>
-</Dialog>
+            {/* Bulk Delete Confirmation Modal */}
+            <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl">Confirm Bulk Deletion</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete {selectedCount} selected students? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowBulkDeleteModal(false)}
+                            disabled={bulkDeleteLoading}
+                            className="w-full sm:w-auto"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleBulkDelete}
+                            disabled={bulkDeleteLoading}
+                            className="w-full sm:w-auto"
+                        >
+                            {bulkDeleteLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                `Delete ${selectedCount} records`
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
