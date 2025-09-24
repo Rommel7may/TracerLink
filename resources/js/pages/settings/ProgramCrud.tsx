@@ -1,7 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
 
-
+import DeleteModal from '@/components/DeleteModal';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,11 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { type BreadcrumbItem } from '@/types';
-import DeleteModal from '@/components/DeleteModal';
+import { Edit, Loader2, Plus, Trash2 } from 'lucide-react';
 
 type Program = {
     id: number;
@@ -29,13 +30,12 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/settings/program',
     },
 ];
-function handleDeleteProgram(id: number) {
-    router.delete(`/program/${id}`);
-}
+
 export default function ProgramCrud({ programs }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+    const [processingDelete, setProcessingDelete] = useState<number | null>(null);
 
     const {
         data,
@@ -53,6 +53,7 @@ export default function ProgramCrud({ programs }: Props) {
     const openAddModal = () => {
         reset();
         setEditMode(false);
+        setEditingProgram(null);
         setShowModal(true);
     };
 
@@ -70,6 +71,7 @@ export default function ProgramCrud({ programs }: Props) {
                 onSuccess: () => {
                     setShowModal(false);
                     reset();
+                    setEditingProgram(null);
                 },
             });
         } else {
@@ -82,6 +84,20 @@ export default function ProgramCrud({ programs }: Props) {
         }
     };
 
+    const handleDeleteProgram = async (id: number) => {
+        setProcessingDelete(id);
+        try {
+            await router.delete(`/program/${id}`);
+        } catch (error) {
+            console.error('Error deleting program:', error);
+        } finally {
+            setProcessingDelete(null);
+        }
+    };
+
+    const isProcessing = (programId: number) => processingDelete === programId;
+    const isAnyProcessing = processing || processingDelete !== null;
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Program settings" />
@@ -91,10 +107,31 @@ export default function ProgramCrud({ programs }: Props) {
                     <HeadingSmall title="Manage Programs" description="Add, edit, or remove program names." />
 
                     <div className="flex justify-start">
-                        <Button onClick={openAddModal}>Add Program</Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button onClick={openAddModal} disabled={isAnyProcessing}>
+                                        {processing ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Adding...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Add Program
+                                            </>
+                                        )}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Create a new program</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
 
-                    <div className="rounded-md ">
+                    <div className="rounded-md">
                         <Table className="w-full text-sm">
                             <TableHeader>
                                 <TableRow>
@@ -108,18 +145,57 @@ export default function ProgramCrud({ programs }: Props) {
                                         <TableRow key={program.id} className="border-t">
                                             <TableCell className="p-3">{program.name}</TableCell>
                                             <TableCell className="space-x-2 p-3 text-right">
-                                                <Button size="sm" variant="secondary" onClick={() => openEditModal(program)}>
-                                                    Edit
-                                                </Button>
-                                                <DeleteModal
-                                                    onConfirm={() => handleDeleteProgram(program.id)}
-                                                    title="Delete Program"
-                                                    description={`Are you sure you want to delete "${program.name}"? This cannot be undone.`}
-                                                >
-                                                    <Button variant="destructive" size="sm">
-                                                        Delete
-                                                    </Button>
-                                                </DeleteModal>
+                                                <TooltipProvider>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {/* Edit Button */}
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="secondary"
+                                                                    onClick={() => openEditModal(program)}
+                                                                    disabled={isAnyProcessing || isProcessing(program.id)}
+                                                                >
+                                                                    {isProcessing(program.id) ? (
+                                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    ) : (
+                                                                        <Edit className="h-4 w-4" />
+                                                                    )}
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Edit {program.name}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+
+                                                        {/* Delete Button */}
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <DeleteModal
+                                                                    onConfirm={() => handleDeleteProgram(program.id)}
+                                                                    title="Delete Program"
+                                                                    description={`Are you sure you want to delete this program? This wil not be undone.
+Note: You cannot delete a program if it has assigned alumni or records.`}
+                                                                >
+                                                                    <Button
+                                                                        variant="destructive"
+                                                                        size="sm"
+                                                                        disabled={isAnyProcessing || isProcessing(program.id)}
+                                                                    >
+                                                                        {isProcessing(program.id) ? (
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                        ) : (
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        )}
+                                                                    </Button>
+                                                                </DeleteModal>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Delete {program.name}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+                                                </TooltipProvider>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -139,10 +215,6 @@ export default function ProgramCrud({ programs }: Props) {
                 {showModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                         <div className="w-full max-w-md space-y-6 rounded-xl bg-white p-6 shadow-xl dark:bg-zinc-900">
-                            <div>
-                                <h2 className="text-lg font-bold">{editMode ? 'Edit Program' : 'Add Program'}</h2>
-                            </div>
-
                             <Dialog open={showModal} onOpenChange={setShowModal}>
                                 <DialogContent className="sm:max-w-md">
                                     <DialogHeader>
@@ -161,20 +233,30 @@ export default function ProgramCrud({ programs }: Props) {
                                                 id="name"
                                                 value={data.name}
                                                 onChange={(e) => setData('name', e.target.value)}
-                                                placeholder="e.g. BS Information Tachnology"
+                                                placeholder="e.g. BS Information Technology"
                                                 required
+                                                disabled={processing}
                                             />
                                             <InputError className="mt-2" message={errors.name} />
                                         </div>
 
                                         <DialogFooter className="gap-2">
                                             <DialogClose asChild>
-                                                <Button type="button" variant="secondary">
+                                                <Button type="button" variant="secondary" disabled={processing}>
                                                     Cancel
                                                 </Button>
                                             </DialogClose>
-                                            <Button type="submit" disabled={processing}>
-                                                {editMode ? 'Update' : 'Save'}
+                                            <Button type="submit" disabled={processing || !data.name.trim()}>
+                                                {processing ? (
+                                                    <>
+                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                        {editMode ? 'Updating...' : 'Saving...'}
+                                                    </>
+                                                ) : editMode ? (
+                                                    'Update'
+                                                ) : (
+                                                    'Save'
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </form>

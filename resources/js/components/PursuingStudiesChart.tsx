@@ -36,7 +36,6 @@ const COLORS: Record<string, string> = {
   unknown: 'hsl(220, 9%, 62%)',  // medium gray-blue
 };
 
-
 export default function PursuingStudiesChart({ programId, year }: Props) {
   const [data, setData] = useState<ChartData[]>([]);
 
@@ -90,6 +89,46 @@ export default function PursuingStudiesChart({ programId, year }: Props) {
   const total = data.reduce((sum, d) => sum + d.value, 0);
   const maxValue = Math.max(...data.map((d) => d.value), 0);
 
+  // Custom label function to show percentage labels outside with matching colors
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+    value,
+    fill,
+  }: any) => {
+    if (percent === 0) return null; // Hide label if percentage is 0
+
+    const RADIAN = Math.PI / 180;
+    // Position the label outside the pie
+    const radius = outerRadius + 25; // Move labels outside the pie
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill={fill} // Use the same color as the slice
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        className="text-xs font-bold"
+        style={{
+          paintOrder: 'stroke',
+          stroke: 'white',
+          strokeWidth: 3,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+        }}
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   const renderLegend = (props: any) => {
     const { payload } = props;
     
@@ -141,37 +180,6 @@ export default function PursuingStudiesChart({ programId, year }: Props) {
     );
   };
 
-  // Custom label function to hide 0% labels
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-    value,
-  }: any) => {
-    if (percent === 0) return null; // Hide label if percentage is 0
-
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.2;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        className="text-xs font-semibold"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
-
   return (
     <Card className="h-full w-full rounded-xl border bg-background text-foreground shadow-sm">
       <CardHeader className="pb-3">
@@ -198,9 +206,10 @@ export default function PursuingStudiesChart({ programId, year }: Props) {
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
-                    outerRadius={90}
+                    outerRadius={90} // Slightly reduced to make space for labels
                     stroke='none'
-                    label={renderCustomizedLabel}
+                    label={({ name, percent }) =>
+                      `${(percent * 100).toFixed(0)}%`}
                     labelLine={false}
                     isAnimationActive={true}
                   >
