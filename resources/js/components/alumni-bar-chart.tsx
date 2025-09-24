@@ -331,18 +331,29 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
                     />
 
                     <ChartTooltip
-                      cursor={{ fill: "rgba(0,0,0,0.04)" }}
-                      content={
-                        <ChartTooltipContent 
-                          indicator="line"
-                          labelFormatter={(value) => `Graduation ${viewMode === 'grouped' ? 'Period' : 'Year'}: ${value}`}
-                          formatter={(value, name) => {
-                            const label = chartConfig[name as keyof typeof chartConfig]?.label || name;
-                            return [`${formatNumber(Number(value))} alumni`, label];
-                          }}
-                        />
-                      }
-                    />
+  cursor={{ fill: "rgba(0,0,0,0.04)" }}
+  content={
+    <ChartTooltipContent 
+      indicator="line"
+      labelFormatter={(value) => `Graduation ${viewMode === 'grouped' ? 'Period' : 'Year'}: ${value}`}
+      formatter={(value, name) => {
+        const label = chartConfig[name as keyof typeof chartConfig]?.label || name;
+        const labelStr = typeof label === "string" ? label : String(label);
+        const capitalizedLabel = labelStr.charAt(0).toUpperCase() + labelStr.slice(1).toLowerCase();
+        return [
+          <span key="value" className="font-bold text-gray-900">
+            {formatNumber(Number(value))} alumni
+          </span>, 
+          <span key="label" className="font-semibold text-blue-600">
+            {capitalizedLabel}
+          </span>
+        ];
+      }}
+      className="bg-white border border-gray-200 shadow-lg rounded-lg p-3"
+      labelClassName="font-bold text-gray-800 text-sm"
+    />
+  }
+/>
 
                     {/* Total Bar */}
                     <Bar 

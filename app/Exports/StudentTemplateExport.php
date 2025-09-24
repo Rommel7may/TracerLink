@@ -18,7 +18,7 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithEvents
                 'Student Number' => '',
                 'Student Name' => '',
                 'Email' => '',
-                'Year' => date('Y'),
+                'Year' => '',
             ], // Row 3: Column headers
         ];
     }
@@ -28,7 +28,7 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithEvents
         return [
             ['Pampanga State University'], // Title row
             ['Lubao Campus'],              // Campus row
-            ['Student Number', 'Student Name', 'Email', 'Year'], // Column headers
+            ['Student Number', 'Student Name', 'Email', 'Year Graduated'], // Column headers
         ];
     }
 
@@ -64,7 +64,7 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithEvents
                 $sheet->getColumnDimension('A')->setWidth(20);
                 $sheet->getColumnDimension('B')->setWidth(30);
                 $sheet->getColumnDimension('C')->setWidth(30);
-                $sheet->getColumnDimension('D')->setWidth(10);
+                $sheet->getColumnDimension('D')->setWidth(30);
             },
         ];
     }
