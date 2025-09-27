@@ -84,7 +84,7 @@ export function SendEmailToSelected({ selectedStudents, disabled = false }: Prop
         onClick={() => setOpen(true)}
       >
         <FileInput className="w-4 h-4 mr-2" />
-        Send Form
+        Send Form Link
       </Button>
     </div>
   </TooltipTrigger>
