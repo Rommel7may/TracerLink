@@ -672,17 +672,17 @@ export default function JobPost() {
             <p className="text-xs text-muted-foreground">
               Paste a Google Maps link to provide precise location
             </p>
-            {data.location_link && extractCoordinatesFromLink(data.location_link) && (
+            {/* {data.location_link && extractCoordinatesFromLink(data.location_link) && (
               <div className="text-xs text-green-600 flex items-center">
                 <MapPin className="h-3 w-3 mr-1" />
                 Valid Google Maps link detected
               </div>
-            )}
-            {data.location_link && !extractCoordinatesFromLink(data.location_link) && (
+            )} */}
+            {/* {data.location_link && extractCoordinatesFromLink(data.location_link) && (
               <div className="text-xs text-amber-600">
                 This doesn't appear to be a valid Google Maps link
               </div>
-            )}
+            )} */}
           </TabsContent>
         </Tabs>
       </div>
