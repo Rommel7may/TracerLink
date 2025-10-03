@@ -70,7 +70,7 @@
                               <tr>
                                 <td align="center" bgcolor="#1a73e8" style="border-radius: 4px;">
                                   <a href="{{ $formUrl }}" target="_blank" style="font-size: 15px; font-weight: 500; color: #ffffff; text-decoration: none; padding: 12px 24px; display: inline-block;">
-                                    Complete Alumni Form
+                                    Fill UP ALUMNI FORM
                                   </a>
                                 </td>
                               </tr>
