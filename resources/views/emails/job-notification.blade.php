@@ -14,26 +14,26 @@
       <h2 style="color:#111827; font-size:20px; font-weight:bold; margin:0 0 8px 0;">
         New Job Opportunity: {{ $job->title }}
       </h2>
-      <p style="color:#6b7280; font-size:13px; margin:0;">Apply within the specified date range to be considered</p>
+      <p style="color:#6b7280; font-size:13px; margin:0;">Check the details below to see if this opportunity fits you</p>
     </div>
 
     <!-- Date Range -->
     <div style="display:flex; justify-content:center; gap:16px; padding:24px; flex-wrap:wrap;">
       <div style="color:#111827; padding:16px; text-align:center; min-width:120px;">
-        <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">POSTED ON</div>
+        <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">Posted date</div>
         <div style="font-size:16px; font-weight:bold;">
           {{ \Carbon\Carbon::parse($job->start_date)->format('F d, Y') }}
         </div>
       </div>
       <div style="color:#111827; padding:16px;  text-align:center; min-width:120px;">
-        <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">APPLY UNTIL</div>
+        <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">Apply deadline</div>
         <div style="font-size:16px; font-weight:bold;">
           {{ \Carbon\Carbon::parse($job->application_deadline)->format('F d, Y') }}
         </div>
       </div>
     </div>
 
-    <p style="text-align:center; font-style:italic; color:#374151; padding:0 24px 24px 24px; margin:0;">
+    <p style="text-align:center;color:#374151; padding:0 24px 24px 24px; margin:0;">
       This position will be available for applications between 
       <span style="font-weight:600; color:#111827;">
         {{ \Carbon\Carbon::parse($job->start_date)->format('F d, Y') }}
@@ -55,7 +55,7 @@
       @if($job->location_link)
         <p><strong>Location:</strong> 
           <a href="{{ $job->location_link }}" target="_blank" style="color:#111827; text-decoration:underline;">
-            📍 View Location on Google Maps
+            📍 Click to view
           </a>
         </p>
       @endif
