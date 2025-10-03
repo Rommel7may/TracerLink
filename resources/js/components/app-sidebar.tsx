@@ -45,13 +45,7 @@ const primaryNavItems: NavItem[] = [
     title: 'Analytics',
     href: '/data',
     icon: ChartLine,
-  },
-  {
-    title: 'Employability Report',
-    href: '/employability',
-    icon: BookOpen,
-  },
- 
+  }, 
 ];
 
 //bot
@@ -66,6 +60,14 @@ const secondaryNavItems: NavItem[] = [
     href: '/jobpost',
     icon: FileText,
   },  
+];
+
+const ThirdNavItems: NavItem[] = [
+    {
+    title: 'Employability Report',
+    href: '/employability',
+    icon: BookOpen,
+  },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -94,6 +96,9 @@ export function AppSidebar() {
         {/* Group 2 */}
          <SidebarGroupLabel>Management</SidebarGroupLabel>
         <NavMain items={secondaryNavItems} />
+        {/* Group 3 */}
+        <SidebarGroupLabel>Print Report</SidebarGroupLabel>
+        <NavMain items={ThirdNavItems} />
       </SidebarContent>
 
       <SidebarFooter>
