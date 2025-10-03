@@ -133,6 +133,7 @@ export default function GenderChart() {
             <CardTitle className="text-lg font-semibold">Gender Distribution</CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
               Demographic breakdown of alumni population
+                <div className="text-muted-foreground whitespace-nowrap">Data updated {new Date().toLocaleDateString()}</div>
             </CardDescription>
           </div>
           {/* <div className="p-2 rounded-full bg-pink-100">

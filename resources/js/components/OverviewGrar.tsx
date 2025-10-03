@@ -79,6 +79,7 @@ export function GraduatesLineChart() {
             <CardTitle className="text-lg font-semibold">Response Trends</CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
               Number of responses by academic year
+                <div className="text-muted-foreground whitespace-nowrap">Data updated {new Date().toLocaleDateString()}</div>
             </CardDescription>
           </div>
           {/* <div className="p-2 rounded-full bg-blue-100">

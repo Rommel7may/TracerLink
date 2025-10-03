@@ -48,7 +48,7 @@ export default function dashboard({
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Dashboard" />
 
-      <div className="flex flex-col gap-8 p-6 min-h-screen">
+      <div>
         {/* Page Header */}
         <div className="flex flex-col gap-1">
         </div>
@@ -72,7 +72,7 @@ export default function dashboard({
           {/* Gender Distribution Chart */}
           <div>
             <GenderChart />
-            <div className="mt-1">
+            <div className="mt-7">
               <AlumniBarChart alumniPerYear={alumniPerYear} />
             </div>
              
