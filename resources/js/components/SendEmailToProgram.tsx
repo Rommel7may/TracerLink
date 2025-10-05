@@ -18,9 +18,10 @@ type Student = {
 interface Props {
   selectedStudents: Student[]
   disabled?: boolean
+  onEmailSent?: () => void // Add this callback prop
 }
 
-export function SendEmailToSelected({ selectedStudents, disabled = false }: Props) {
+export function SendEmailToSelected({ selectedStudents, disabled = false, onEmailSent }: Props) {
   const [open, setOpen] = React.useState(false)
   const [isSending, setIsSending] = React.useState(false)
 
@@ -47,6 +48,11 @@ export function SendEmailToSelected({ selectedStudents, disabled = false }: Prop
 
       if (queued?.length > 0) {
         toast.success(`Sent to ${queued.length} email(s) successfully!`)
+      }
+
+      // Call the callback after successful email sending
+      if (onEmailSent) {
+        onEmailSent()
       }
 
       setOpen(false)
@@ -76,29 +82,29 @@ export function SendEmailToSelected({ selectedStudents, disabled = false }: Prop
         setOpen(isOpen);
       }}>
         <Tooltip>
-  <TooltipTrigger asChild>
-    <div className="inline-block"> {/* Wrap in div for tooltip to work on disabled button */}
-      <Button 
-        variant="default" 
-        disabled={disabled || selectedStudents.length === 0}
-        onClick={() => setOpen(true)}
-      >
-        <FileInput className="w-4 h-4 mr-2" />
-        Send Form Link
-      </Button>
-    </div>
-  </TooltipTrigger>
-  <TooltipContent>
-    <p>
-      {disabled 
-        ? ""
-        : selectedStudents.length === 0 
-          ? "This  will be sent to selected year or student" 
-          : "This  will be sent to selected year or student"
-      }
-    </p>
-  </TooltipContent>
-</Tooltip>
+          <TooltipTrigger asChild>
+            <div className="inline-block"> {/* Wrap in div for tooltip to work on disabled button */}
+              <Button 
+                variant="default" 
+                disabled={disabled || selectedStudents.length === 0}
+                onClick={() => setOpen(true)}
+              >
+                <FileInput className="w-4 h-4 mr-2" />
+                Send Form Link
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {disabled 
+                ? ""
+                : selectedStudents.length === 0 
+                  ? "This will be sent to selected year or student" 
+                  : "This will be sent to selected year or student"
+              }
+            </p>
+          </TooltipContent>
+        </Tooltip>
 
         <DialogContent>
           <DialogHeader>

@@ -2,48 +2,17 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageProps } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
-import {
-    ColumnDef,
-    flexRender,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    SortingState,
-    useReactTable,
-} from '@tanstack/react-table';
+import {ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, SortingState, useReactTable,} from '@tanstack/react-table';
 import axios from 'axios';
-import {
-    ChevronDown,
-    ChevronsUpDown,
-    ChevronUp,
-    DownloadIcon,
-    FileUp,
-    Loader2,
-    Menu,
-    MoreHorizontal,
-    PlusIcon,
-    Search,
-    Trash,
-    Upload,
-    X,
-} from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, ChevronUp, DownloadIcon, FileUp, Loader2, Menu, MoreHorizontal, PlusIcon, Search, Trash, Upload, X,} from 'lucide-react';
 import * as React from 'react';
 import { toast, Toaster } from 'sonner';
-
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { SendEmailToSelected } from './SendEmailToProgram';
@@ -404,6 +373,10 @@ export default function StudentIndex() {
         return studentList;
     }, [selectedCount, table, yearFilter, studentList]);
 
+    const clearAllSelections = () => {
+        setRowSelection({});
+    };
+
     return (
         <div className="w-full p-4 sm:p-6">
             <Toaster position="top-right" richColors closeButton />
@@ -417,7 +390,7 @@ export default function StudentIndex() {
 
             {/* Header */}
             <div className="mb-6">
-                 <h1 className="text-2xl font-bold tracking-tight">Alumni Management</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Alumni Management</h1>
                 <p className="mt-2 text-sm sm:text-base">Manage your alumni records and communications</p>
             </div>
 
@@ -469,7 +442,7 @@ export default function StudentIndex() {
                     {selectedCount > 0 && (
                         <Button variant="destructive" onClick={() => setShowBulkDeleteModal(true)} className="w-full gap-2 md:w-auto">
                             <Trash className="h-4 w-4" />
-                            Delete({selectedCount})
+                            Delete
                         </Button>
                     )}
                 </div>
@@ -489,7 +462,7 @@ export default function StudentIndex() {
                     </Button>
 
                     <div className="w-full sm:w-auto">
-                        <SendEmailToSelected selectedStudents={currentData} />
+                        <SendEmailToSelected selectedStudents={currentData} onEmailSent={clearAllSelections} />
                     </div>
                 </div>
             </div>
@@ -498,38 +471,38 @@ export default function StudentIndex() {
             <div className="overflow-x-auto rounded-lg border shadow-sm">
                 <Table>
                     <TableHeader>
-    {table.getHeaderGroups().map((headerGroup) => (
-        <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => {
-                const isNameColumn = header.column.columnDef.header === 'STUDENT FULL NAME';
-                
-                return (
-                    <TableHead
-                        key={header.id}
-                        className={`font-semibold whitespace-nowrap ${isNameColumn ? 'cursor-pointer' : ''}`}
-                        onClick={isNameColumn ? header.column.getToggleSortingHandler() : undefined}
-                    >
-                        <div className="flex items-center gap-1">
-                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                            {/* Only show sorting indicators for name column */}
-                            {isNameColumn && (
-                                <>
-                                    {header.column.getIsSorted() === 'asc' ? (
-                                        <ChevronUp className="h-4 w-4" />
-                                    ) : header.column.getIsSorted() === 'desc' ? (
-                                        <ChevronDown className="h-4 w-4" />
-                                    ) : (
-                                        <ChevronsUpDown className="h-4 w-4 text-gray-300" />
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    </TableHead>
-                );
-            })}
-        </TableRow>
-    ))}
-</TableHeader>
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => {
+                                    const isNameColumn = header.column.columnDef.header === 'STUDENT FULL NAME';
+
+                                    return (
+                                        <TableHead
+                                            key={header.id}
+                                            className={`font-semibold whitespace-nowrap ${isNameColumn ? 'cursor-pointer' : ''}`}
+                                            onClick={isNameColumn ? header.column.getToggleSortingHandler() : undefined}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                                {/* Only show sorting indicators for name column */}
+                                                {isNameColumn && (
+                                                    <>
+                                                        {header.column.getIsSorted() === 'asc' ? (
+                                                            <ChevronUp className="h-4 w-4" />
+                                                        ) : header.column.getIsSorted() === 'desc' ? (
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        ) : (
+                                                            <ChevronsUpDown className="h-4 w-4 text-gray-300" />
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        </TableHead>
+                                    );
+                                })}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
                     <TableBody>
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
@@ -578,16 +551,16 @@ export default function StudentIndex() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Student Number</label>
                             <Input
-                                placeholder="Enter student number"
+                                placeholder="e.g. 1234567890"
                                 value={data.student_number}
                                 onChange={(e) => setData('student_number', e.target.value)}
                                 required
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Student Name</label>
+                            <label className="text-sm font-medium">Student Full Name</label>
                             <Input
-                                placeholder="Enter full name"
+                                placeholder="e.g. Dela Cruz, Juan T."
                                 value={data.student_name}
                                 onChange={(e) => setData('student_name', e.target.value)}
                                 required
@@ -597,18 +570,19 @@ export default function StudentIndex() {
                             <label className="text-sm font-medium">Email (Optional)</label>
                             <Input
                                 type="email"
-                                placeholder="Enter email address"
+                                placeholder="e.g. email@gmail.com"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Year</label>
+                            <label className="text-sm font-medium">Year Graduated</label>
                             <Input
                                 type="number"
                                 min="2022"
                                 max={new Date().getFullYear()}
                                 value={data.year}
+                                placeholder="e.g.  2022"
                                 onChange={(e) => setData('year', e.target.value)}
                                 required
                             />
@@ -713,7 +687,7 @@ export default function StudentIndex() {
             <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
                 <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl">Confirm Bulk Deletion</DialogTitle>
+                        <DialogTitle className="text-xl">Confirm Deletion</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to delete {selectedCount} selected students? This action cannot be undone.
                         </DialogDescription>
@@ -721,13 +695,14 @@ export default function StudentIndex() {
                     <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => setShowBulkDeleteModal(false)}
                             disabled={bulkDeleteLoading}
-                            className="w-full sm:w-auto"
+                            className="w-full space-x-0.5 sm:w-auto"
                         >
                             Cancel
                         </Button>
+
                         <Button
                             type="button"
                             variant="destructive"
@@ -741,7 +716,7 @@ export default function StudentIndex() {
                                     Deleting...
                                 </>
                             ) : (
-                                `Delete ${selectedCount} records`
+                                `Delete`
                             )}
                         </Button>
                     </DialogFooter>
