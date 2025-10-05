@@ -67,7 +67,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email address</Label>
-
+                            <Label className='text-muted-foreground'>Use a real email address you can access in case you forget your password.</Label>
                             <Input
                                 id="email"
                                 type="email"
