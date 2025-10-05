@@ -873,7 +873,7 @@ export default function JobPost() {
 
                                 <div>
                                     <Label className="font-semibold">Start Date</Label>
-                                    <p>{formatDate(viewJob.start_date)}</p>
+                                    <p>{formatDate(viewJob.posted_date)}</p>
                                     {isJobUpcoming(viewJob) && (
                                         <span className="text-xs text-blue-500">(Upcoming)</span>
                                     )}
