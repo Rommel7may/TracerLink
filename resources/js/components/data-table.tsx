@@ -717,11 +717,11 @@ export function AlumniTable() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleteLoading}>
-                            {bulkDeleteLoading ? 'Deleting...' : `Delete ${selectedCount} records`}
-                        </Button>
-                        <Button variant="outline" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleteLoading}>
+                        <Button variant="ghost" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleteLoading}>
                             Cancel
+                        </Button>
+                         <Button variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleteLoading}>
+                            {bulkDeleteLoading ? 'Deleting...' : `Delete`}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
