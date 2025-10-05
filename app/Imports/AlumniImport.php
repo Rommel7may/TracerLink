@@ -12,6 +12,11 @@ class AlumniImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
+        unset($row[0]);
+        
+        if (empty($row['student_number'])) {
+        return null;
+    }
         // Convert Program JSON to program_id
         $programId = null;
         if (!empty($row['program'])) {

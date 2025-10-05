@@ -42,9 +42,13 @@ class AlumniImportController extends Controller
 
     foreach ($rows as $index => $row) {
         // Skip invalid rows
-        if (!isset($row[0]) || empty($row[0])) {
-            continue; // student_number missing
-        }
+        if (
+            !isset($row[0]) ||
+            trim($row[0]) === '' ||
+            strtolower(trim($row[0])) === 'student number'
+            ){
+                continue; // skip invalid or header rows
+             }
 
         $programName = isset($row[2]) ? strtoupper(trim($row[2])) : null;
 

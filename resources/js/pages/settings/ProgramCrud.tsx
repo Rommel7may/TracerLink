@@ -242,7 +242,7 @@ Note: You cannot delete a program if it has assigned alumni or records.`}
 
                                         <DialogFooter className="gap-2">
                                             <DialogClose asChild>
-                                                <Button type="button" variant="secondary" disabled={processing}>
+                                                <Button type="button" variant="ghost" disabled={processing}>
                                                     Cancel
                                                 </Button>
                                             </DialogClose>

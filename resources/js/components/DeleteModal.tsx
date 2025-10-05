@@ -44,7 +44,7 @@ export default function DeleteModal({
         </DialogHeader>
 
         <DialogFooter>
-          <Button variant="secondary" onClick={() => setOpen(false)}>
+          <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={handleConfirm}>
