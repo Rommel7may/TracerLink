@@ -617,7 +617,7 @@ export default function StudentIndex() {
                     <DialogHeader>
                         <DialogTitle className="text-xl">Import Students from Excel</DialogTitle>
                         <DialogFooter className="flex flex-col items-start gap-2">
-                            <p className="text-sm text-gray-600">Please ensure your Excel file matches the required format. You can&nbsp;</p>
+                            <p className="text-sm text-muted-foreground">Please ensure your Excel file matches the required format. You can&nbsp;</p>
                             <Button
                                 onClick={handleDownloadTemplate} // ✅ blob download function
                                 className="w-full gap-2 font-medium md:w-auto"
