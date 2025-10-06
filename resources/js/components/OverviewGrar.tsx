@@ -192,15 +192,15 @@ export function GraduatesLineChart() {
 
             {/* Trend Indicator */}
             {data.length >= 2 && (
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${
+              <div className="flex items-center justify-center gap-2 text-sm ">
+                <div className={`flex items-center gap-1 px-3 py-1 rounded-full z-999999 ${
                   trend.direction === 'up' ? 'bg-green-100 text-green-800' : 
                   trend.direction === 'down' ? 'bg-red-100 text-red-800' : 
                   'bg-gray-100 text-gray-800'
                 }`}>
                   {trend.direction === 'up' ? <ArrowUp className="h-3 w-3" /> : 
                    trend.direction === 'down' ? <ArrowDown className="h-3 w-3" /> : null}
-                  <span className="font-medium z-9999999">
+                  <span className="font-medium  ">
                     {trend.direction === 'up' ? '+' : trend.direction === 'down' ? '-' : ''}
                     {trend.percentage.toFixed(1)}% responses from previous year
                   </span>
