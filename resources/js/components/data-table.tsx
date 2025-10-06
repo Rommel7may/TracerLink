@@ -784,7 +784,7 @@ export function AlumniTable() {
                         <DialogTitle>Import Alumni</DialogTitle>
                         <DialogDescription>Upload an Excel/CSV file containing alumni data.</DialogDescription>
                         <DialogFooter className="flex flex-col items-center space-y-2 text-center">
-                            <p className="text-sm text-gray-600">Please ensure your Excel file matches the required format. You can&nbsp;</p>
+                            <p className="text-sm text-muted-foreground">Please ensure your Excel file matches the required format. You can&nbsp;</p>
                             <Button
                                 className="text-blue-600 underline"
                                 variant="link"
@@ -794,10 +794,12 @@ export function AlumniTable() {
                             </Button>
                         </DialogFooter>
                     </DialogHeader>
-                    <Input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
+                    <input
+                     className='w-full rounded-md border border-gray-300 p-3 file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100'
+                     type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
                     <DialogFooter>
                         <Button onClick={handleImport} disabled={!importFile || importLoading}>
-                            {importLoading ? 'Uploading...' : 'Upload'}
+                            {importLoading ? 'Importing...' : 'Import'}
                         </Button>
                         <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importLoading}>
                             Cancel
