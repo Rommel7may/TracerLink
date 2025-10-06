@@ -21,7 +21,7 @@ import {
     VisibilityState,
 } from '@tanstack/react-table';
 import axios from 'axios';
-import { DownloadIcon, FilterIcon, MoreVertical, PlusIcon, Trash2Icon, Upload } from 'lucide-react';
+import { DownloadIcon, FileUp, FilterIcon, MoreVertical, PlusIcon, Trash2Icon, Upload } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 import { AlumniForm } from './AlumniForm';
@@ -786,11 +786,11 @@ export function AlumniTable() {
                         <DialogFooter className="flex flex-col items-center space-y-2 text-center">
                             <p className="text-sm text-muted-foreground">Please ensure your Excel file matches the required format. You can&nbsp;</p>
                             <Button
-                                className="text-blue-600 underline"
+                                className="text-blue-600 underline cursor-pointer"
                                 variant="link"
                                 onClick={() => (window.location.href = route('alumni.template.download'))}
                             >
-                                download Template
+                               Download Excel Template
                             </Button>
                         </DialogFooter>
                     </DialogHeader>
@@ -798,11 +798,11 @@ export function AlumniTable() {
                      className='w-full rounded-md border border-gray-300 p-3 file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100'
                      type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
                     <DialogFooter>
-                        <Button onClick={handleImport} disabled={!importFile || importLoading}>
-                            {importLoading ? 'Importing...' : 'Import'}
-                        </Button>
-                        <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importLoading}>
+                         <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importLoading}>
                             Cancel
+                        </Button>
+                        <Button onClick={handleImport} disabled={!importFile || importLoading}>
+                           <FileUp className='w-4 h-4'/>  {importLoading ? 'Importing...' : 'Import'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -623,7 +623,7 @@ export default function StudentIndex() {
                                 className="w-full gap-2 font-medium md:w-auto"
                                 variant="link"
                             >
-                                <span className="text-blue-700 underline">download Excel Template</span>
+                                <span className="text-blue-700 underline cursor-pointer">Download Excel Template</span>
                             </Button>
                         </DialogFooter>
                     </DialogHeader>
@@ -639,13 +639,14 @@ export default function StudentIndex() {
                             />
                             <p className="text-sm text-gray-500">Supported formats: .xlsx, .xls</p>
                         </div>
-                        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
-                            <Button type="button" variant="outline" onClick={() => setShowUploadModal(false)} className="w-full sm:w-auto">
+                        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-2">
+                            <Button type="button" variant="ghost" onClick={() => setShowUploadModal(false)} className="w-full sm:w-auto">
                                 Cancel
                             </Button>
+                            
                             <Button type="submit" disabled={!excelFile || importLoading} className="w-full sm:w-auto">
-                                {importLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
-                                {importLoading ? 'Importing...' : 'Upload File'}
+                                {importLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className=" h-4 w-4" />}
+                                {importLoading ? 'Importing...' : 'Import'}
                             </Button>
                         </DialogFooter>
                     </form>
