@@ -21,13 +21,13 @@
     <div style="display:flex; justify-content:center; gap:16px; padding:24px; flex-wrap:wrap;">
       <div style="color:#111827; padding:16px; text-align:center; min-width:120px;">
         <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">Posted date</div>
-        <div style="font-size:16px; font-weight:bold;">
+        <div style="font-size:16px">
           {{ \Carbon\Carbon::parse($job->start_date)->format('F d, Y') }}
         </div>
       </div>
       <div style="color:#111827; padding:16px;  text-align:center; min-width:120px;">
         <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">Apply deadline</div>
-        <div style="font-size:16px; font-weight:bold;">
+        <div style="font-size:16px">
           {{ \Carbon\Carbon::parse($job->application_deadline)->format('F d, Y') }}
         </div>
       </div>
