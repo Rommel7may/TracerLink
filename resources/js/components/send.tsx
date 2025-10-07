@@ -603,8 +603,8 @@ export default function StudentIndex() {
                             </Button>
                             <Button type="submit" disabled={processing || addLoading} className="w-full sm:w-auto">
                                 {addLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                {editId ? 'Update Student' : 'Add New'}
-                                {addLoading ? '...' : ''}
+                                {editId ? 'Update' : 'Add'}
+                                {addLoading ? 'ing...' : ''}
                             </Button>
                         </DialogFooter>
                     </form>
