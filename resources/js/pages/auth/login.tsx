@@ -230,7 +230,7 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
                   <Label htmlFor="remember" className="text-sm">Remember me</Label>
                 </div>
               </div>
-{/* asa */}
+              
               <Button 
                 type="submit" 
                 className="w-full" 
