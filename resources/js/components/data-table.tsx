@@ -570,7 +570,33 @@ export function AlumniTable() {
                                 </Select>
                             </div>
 
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => setColumnFilters([])}>
+                            {/* work location filter */}
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium">Work Location</label>
+                                <Select
+                                    onValueChange={(val) => {
+                                        if (val === '__clear__') {
+                                            table.getColumn('work_location')?.setFilterValue('');
+                                        } else {
+                                            table.getColumn('work_location')?.setFilterValue(val);
+                                        }
+                                    }}
+                                    value={(table.getColumn('work_location')?.getFilterValue() as string) || ''}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Work Location" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem className="bg-red-500/10" value="__clear__">
+                                            Clear filter
+                                        </SelectItem>
+                                        <SelectItem value="Local">Local</SelectItem>
+                                        <SelectItem value="Abroad">Abroad</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <Button variant="outline" size="sm" className="w-full bg-red-300/20" onClick={() => setColumnFilters([])}>
                                 Clear all filters
                             </Button>
                         </DropdownMenuContent>

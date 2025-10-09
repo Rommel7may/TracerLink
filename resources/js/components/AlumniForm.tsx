@@ -321,7 +321,7 @@ export const AlumniForm = memo(function AlumniForm({
                                         value={data.student_number}
                                         onChange={handleInputChange('student_number')}
                                         disabled={processing || isEditing} // ✅ disable kapag edit mode
-                                        placeholder="e.g., 2020-12345"
+                                        placeholder="e.g., 1234567890"
                                     />
                                 </FieldWrapper>
 

@@ -27,7 +27,7 @@ class AlumniFormController extends Controller
         $rules = [
             'student_number' => [
                 'required',
-                'string',
+                'regex:/^[0-9]{10}$/',
                 'exists:students,student_number',
                 Rule::unique('alumni', 'student_number'), 
             ],
@@ -58,6 +58,7 @@ class AlumniFormController extends Controller
 
         $messages = [
             'student_number.required' => 'Student number is required.',
+            'student_number.regex' => 'The student number must contain only numbers and be exactly 10 digits long.',
             'student_number.exists'   => 'The student is not registered.',
             'student_number.unique'   => 'This student is already in the alumni records.',
             'program_id.exists'       => 'The selected program does not exist.',
