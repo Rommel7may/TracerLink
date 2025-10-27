@@ -99,7 +99,7 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
       const lockUntil = Date.now() + 5 * 60 * 1000; // 5 minutes from now
       localStorage.setItem('lockTime', lockUntil.toString());
       setIsLocked(true);
-      setTimeRemaining(300); // 5 minutes in secondsss
+      setTimeRemaining(300); // 5 minutes in seconds
       return;
     }
     post(route('login'), {
