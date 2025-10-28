@@ -227,7 +227,7 @@ export function AlumniTable() {
 
     // WebSocket connection for real-time updates
     React.useEffect(() => {
-        console.log('🔌 Connecting to Reverb WebSocket for alumni updates...');
+        console.log('Connecting to Reverb WebSocket for alumni updates...');
 
         // Only run on client side
         if (typeof window === 'undefined') {
@@ -236,37 +236,37 @@ export function AlumniTable() {
         }
 
         if (!echo) {
-            console.error('❌ Echo instance is not available');
+            console.error('Echo instance is not available');
             return;
         }
 
-        console.log('✅ Echo instance found');
+        console.log('Echo instance found');
 
         // Add connection event listeners for debugging
         const connector = echo.connector as any;
 
         if (connector.pusher && connector.pusher.connection) {
             connector.pusher.connection.bind('connected', () => {
-                console.log('✅ WebSocket connected successfully!');
+                console.log('WebSocket connected successfully!');
             });
 
             connector.pusher.connection.bind('error', (error: any) => {
-                console.error('❌ WebSocket connection error:', error);
+                console.error('WebSocket connection error:', error);
             });
         }
 
         // Add a small delay to ensure everything is loaded
         const connectionTimeout = setTimeout(() => {
             try {
-                console.log('📡 Creating WebSocket channel...');
+                console.log('Creating WebSocket channel...');
 
                 // Subscribe to the alumni channel
                 const channel = echo.channel('alumni');
 
-                console.log('✅ Channel created');
+                console.log('Channel created');
 
                 const listener = (e: any) => {
-                    console.log('🎉 AlumniCreated event received:', e);
+                    console.log('AlumniCreated event received:', e);
 
                     // Refresh the data from server
                     fetchAlumni();
@@ -277,9 +277,9 @@ export function AlumniTable() {
                 // Listen for the event
                 channel.listen('.AlumniCreated', listener);
 
-                console.log('✅ Successfully subscribed to alumni channel');
+                console.log('Successfully subscribed to alumni channel');
             } catch (error) {
-                console.error('❌ Error setting up WebSocket connection:', error);
+                console.error('Error setting up WebSocket connection:', error);
             }
         }, 1000); // 1 second delay
 
@@ -289,10 +289,10 @@ export function AlumniTable() {
             try {
                 if (echo) {
                     echo.leaveChannel('alumni');
-                    console.log('👋 Left alumni channel');
+                    console.log('Left alumni channel');
                 }
             } catch (error) {
-                console.error('❌ Error leaving channel:', error);
+                console.error('Error leaving channel:', error);
             }
         };
     }, []); // Empty dependency array
@@ -342,7 +342,15 @@ export function AlumniTable() {
         { accessorKey: 'given_name', header: 'Given Name', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'middle_initial', header: 'M.I.', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'present_address', header: 'Present address.', cell: ({ getValue }) => getValue() || 'N/A' },
-        { accessorKey: 'sex', header: 'Sex', cell: ({ getValue }) => getValue() || 'N/A' },
+        { 
+            accessorKey: 'sex', 
+            header: 'Sex', 
+            cell: ({ getValue }) => getValue() || 'N/A',
+            filterFn: (row, columnId, filterValue) => {
+                const sex = (row.getValue(columnId) as string || '').toLowerCase();
+                return sex === filterValue.toLowerCase();
+            }
+        },
         { accessorKey: 'graduation_year', header: 'Grad Year', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'employment_status', header: 'Employment', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'company_name', header: 'Company', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
@@ -596,6 +604,32 @@ export function AlumniTable() {
                                 </Select>
                             </div>
 
+                            {/* gender filter */}
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium">Gender Location</label>
+                                <Select
+                                    onValueChange={(val) => {
+                                        if (val === '__clear__') {
+                                            table.getColumn('sex')?.setFilterValue('');
+                                        } else {
+                                            table.getColumn('sex')?.setFilterValue(val);
+                                        }
+                                    }}
+                                    value={(table.getColumn('sex')?.getFilterValue() as string) || ''}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Gender" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem className="bg-red-500/10" value="__clear__">
+                                            Clear filter
+                                        </SelectItem>
+                                        <SelectItem value="male">Male</SelectItem>
+                                        <SelectItem value="female">Female</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <Button variant="outline" size="sm" className="w-full bg-red-300/20" onClick={() => setColumnFilters([])}>
                                 Clear all filters
                             </Button>
@@ -647,13 +681,13 @@ export function AlumniTable() {
                     </div>
 
                     {/* Right side actions */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
-    {/* Left section - Add/Send Email */}
-    <div className="flex items-center gap-3">
-        {/* Send Email */}
-        <Dialog open={sendEmailOpen} onOpenChange={setSendEmailOpen}>
-            <DialogTrigger asChild>
-                {/* <Button 
+                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        {/* Left section - Add/Send Email */}
+                        <div className="flex items-center gap-3">
+                            {/* Send Email */}
+                            <Dialog open={sendEmailOpen} onOpenChange={setSendEmailOpen}>
+                                <DialogTrigger asChild>
+                                    {/* <Button 
                   variant="outline" 
                   className="flex items-center"
                   disabled={selectedCount === 0}
@@ -661,75 +695,62 @@ export function AlumniTable() {
                   <UsersRound className="mr-2 h-4 w-4" />
                   Send Email
                 </Button> */}
-            </DialogTrigger>
+                                </DialogTrigger>
 
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Send Email to Selected Alumni</DialogTitle>
-                    <DialogDescription>
-                        This will send email to <b>{selectedCount}</b> selected alumni.
-                    </DialogDescription>
-                </DialogHeader>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Send Email to Selected Alumni</DialogTitle>
+                                        <DialogDescription>
+                                            This will send email to <b>{selectedCount}</b> selected alumni.
+                                        </DialogDescription>
+                                    </DialogHeader>
 
-                <DialogFooter className="pt-4">
-                    <Button onClick={handleSendEmails} disabled={sendEmailLoading}>
-                        {sendEmailLoading ? 'Sending...' : 'Send Now'}
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        onClick={() => setSendEmailOpen(false)}
-                        disabled={sendEmailLoading}
-                    >
-                        Cancel
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    </div>
+                                    <DialogFooter className="pt-4">
+                                        <Button onClick={handleSendEmails} disabled={sendEmailLoading}>
+                                            {sendEmailLoading ? 'Sending...' : 'Send Now'}
+                                        </Button>
+                                        <Button variant="ghost" onClick={() => setSendEmailOpen(false)} disabled={sendEmailLoading}>
+                                            Cancel
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
 
-    {/* Right section - Import/Export/Rows */}
-    <div className="flex flex-wrap items-center gap-3 justify-end">
-        {/* Import */}
-        <Button
-            variant="outline"
-            onClick={() => setImportOpen(true)}
-            className="flex items-center gap-2"
-        >
-            <DownloadIcon className="mr-2 h-4 w-4 text-green-500" />
-            Import
-        </Button>
+                        {/* Right section - Import/Export/Rows */}
+                        <div className="flex flex-wrap items-center justify-end gap-3">
+                            {/* Import */}
+                            <Button variant="outline" onClick={() => setImportOpen(true)} className="flex items-center gap-2">
+                                <DownloadIcon className="mr-2 h-4 w-4 text-green-500" />
+                                Import
+                            </Button>
 
-        {/* Export */}
-        <Button
-            variant="outline"
-            onClick={handleExport}
-            disabled={exportLoading}
-        >
-            <Upload className="mr-2 h-4 w-4 text-blue-500" />
-            {exportLoading ? 'Exporting...' : 'Export'}
-        </Button>
+                            {/* Export */}
+                            <Button variant="outline" onClick={handleExport} disabled={exportLoading}>
+                                <Upload className="mr-2 h-4 w-4 text-blue-500" />
+                                {exportLoading ? 'Exporting...' : 'Export'}
+                            </Button>
 
-        {/* Rows per page */}
-        <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => {
-                setPageSize(Number(value));
-                table.setPageSize(Number(value));
-            }}
-        >
-            <SelectTrigger className="w-20">
-                <SelectValue placeholder={pageSize} />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-        </Select>
-    </div>
-</div>
-
+                            {/* Rows per page */}
+                            <Select
+                                value={pageSize.toString()}
+                                onValueChange={(value) => {
+                                    setPageSize(Number(value));
+                                    table.setPageSize(Number(value));
+                                }}
+                            >
+                                <SelectTrigger className="w-20">
+                                    <SelectValue placeholder={pageSize} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="10">10</SelectItem>
+                                    <SelectItem value="20">20</SelectItem>
+                                    <SelectItem value="50">50</SelectItem>
+                                    <SelectItem value="100">100</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -746,7 +767,7 @@ export function AlumniTable() {
                         <Button variant="ghost" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleteLoading}>
                             Cancel
                         </Button>
-                         <Button variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleteLoading}>
+                        <Button variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleteLoading}>
                             {bulkDeleteLoading ? 'Deleting...' : `Delete`}
                         </Button>
                     </DialogFooter>
@@ -793,7 +814,7 @@ export function AlumniTable() {
                         related_to_course={editingAlumni?.related_to_course}
                         consent={editingAlumni?.consent ?? false}
                         sex={editingAlumni?.sex}
-                        instruction_rating={editingAlumni?.instruction_rating} // ⭐ StarRating value
+                        instruction_rating={editingAlumni?.instruction_rating}
                         onSuccess={() => {
                             fetchAlumni();
                             setShowAddModal(false);
@@ -812,23 +833,26 @@ export function AlumniTable() {
                         <DialogFooter className="flex flex-col items-center space-y-2 text-center">
                             <p className="text-sm text-muted-foreground">Please ensure your Excel file matches the required format. You can&nbsp;</p>
                             <Button
-                                className="text-blue-600 underline cursor-pointer"
+                                className="cursor-pointer text-blue-600 underline"
                                 variant="link"
                                 onClick={() => (window.location.href = route('alumni.template.download'))}
                             >
-                               Download Excel Template
+                                Download Excel Template
                             </Button>
                         </DialogFooter>
                     </DialogHeader>
                     <input
-                     className='w-full rounded-md border border-gray-300 p-3 file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100'
-                     type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
+                        className="w-full rounded-md border border-gray-300 p-3 file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                    />
                     <DialogFooter>
-                         <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importLoading}>
+                        <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importLoading}>
                             Cancel
                         </Button>
                         <Button onClick={handleImport} disabled={!importFile || importLoading}>
-                           <FileUp className='w-4 h-4'/>  {importLoading ? 'Importing...' : 'Import'}
+                            <FileUp className="h-4 w-4" /> {importLoading ? 'Importing...' : 'Import'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -857,7 +881,9 @@ export function AlumniTable() {
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                            <TableCell className="capitalize" key={cell.id}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
                                         ))}
                                     </TableRow>
                                 ))

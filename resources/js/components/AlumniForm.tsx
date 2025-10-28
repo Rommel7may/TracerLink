@@ -392,8 +392,8 @@ export const AlumniForm = memo(function AlumniForm({
                                             <SelectValue placeholder="Sex" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="male">Male</SelectItem>
-                                            <SelectItem value="female">Female</SelectItem>
+                                            <SelectItem value="Male">Male</SelectItem>
+                                            <SelectItem value="Female">Female</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FieldWrapper>

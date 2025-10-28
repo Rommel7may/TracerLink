@@ -56,7 +56,7 @@ class AlumniController extends Controller
             'present_address' => 'required|string',
             'contact_number' => 'required|string',
             'graduation_year' => 'required|digits:4',
-            'sex' => ['required', Rule::in(['male', 'female'])],
+            'sex' => ['required', Rule::in(['Male', 'Female'])],
             'employment_status' => 'required|string',
             'company_name' => 'nullable|string|max:255',
             'work_position' => 'nullable|string|max:255',
@@ -127,7 +127,7 @@ class AlumniController extends Controller
                 'present_address' => 'required|string',
                 'contact_number' => 'required|string',
                 'graduation_year' => 'required|digits:4',
-                'sex' => ['required', Rule::in(['male', 'female'])],
+                'sex' => ['required', Rule::in(['Male', 'Female'])],
                 'employment_status' => 'required|string',
                 'company_name' => 'nullable|string|max:255',
                 'work_position' => 'nullable|string|max:255', // ✅ Added

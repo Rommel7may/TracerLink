@@ -36,7 +36,7 @@ class AlumniFormController extends Controller
             'last_name' => 'required|string',
             'given_name' => 'required|string',
             'middle_initial' => 'nullable|string',
-            'sex' => ['required', Rule::in(['male', 'female'])], // ✅ required sa create
+            'sex' => ['required', Rule::in(['Male', 'Female'])], // ✅ required sa create
             'present_address' => 'required|string',
             'contact_number' => 'required|string',
             'graduation_year' => 'required|digits:4',
@@ -109,7 +109,7 @@ class AlumniFormController extends Controller
             'present_address' => 'required|string',
             'contact_number' => 'required|string',
             'graduation_year' => 'required|digits:4',
-            'sex' => ['required', Rule::in(['male', 'female'])], // ✅ required sa update
+            'sex' => ['required', Rule::in(['Male', 'Female'])], // ✅ required sa update
             'employment_status' => 'required|string',
             'further_studies' => 'nullable|string',
             'instruction_rating' => 'nullable|integer|min:1|max:5',
