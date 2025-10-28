@@ -181,7 +181,7 @@ export default function Data() {
                   </div>
 
                   <Button className="w-full mt-2" onClick={() => setIsFilterOpen(false)}>
-                    Apply Filters
+                    Close 
                   </Button>
                 </div>
               </DropdownMenuContent>
