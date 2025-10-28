@@ -342,15 +342,7 @@ export function AlumniTable() {
         { accessorKey: 'given_name', header: 'Given Name', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'middle_initial', header: 'M.I.', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'present_address', header: 'Present address.', cell: ({ getValue }) => getValue() || 'N/A' },
-        { 
-            accessorKey: 'sex', 
-            header: 'Sex', 
-            cell: ({ getValue }) => getValue() || 'N/A',
-            filterFn: (row, columnId, filterValue) => {
-                const sex = (row.getValue(columnId) as string || '').toLowerCase();
-                return sex === filterValue.toLowerCase();
-            }
-        },
+        { accessorKey: 'sex', header: 'Sex', cell: ({ getValue }) => getValue() || 'N/A', filterFn: (row, columnId, filterValue) => ((row.getValue(columnId) as string || '').toLowerCase() === filterValue.toLowerCase()) },
         { accessorKey: 'graduation_year', header: 'Grad Year', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'employment_status', header: 'Employment', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'company_name', header: 'Company', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
