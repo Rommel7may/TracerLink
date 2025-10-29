@@ -141,7 +141,7 @@ export function AlumniBarChart({ alumniPerYear }: { alumniPerYear: AlumniPerYear
     };
 
     return (
-        <Card className="w-full rounded-xl border-0 bg-background shadow-lg">
+        <Card className="w-full rounded-xl dark:border-1 border-0 bg-background shadow-lg">
             <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                     <div>
