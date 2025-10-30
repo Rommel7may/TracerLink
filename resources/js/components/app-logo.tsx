@@ -2,15 +2,22 @@ import AppLogoIcon from './app-logo-icon';
 
 export default function AppLogo() {
   return (
-    <div className="flex items-center space-x-2">
-      <div className="flex size-10 items-center justify-center">
-        <AppLogoIcon className="size-8 fill-current text-primary" />
+    <div className="flex items-center space-x-3">
+      {/* Logo container */}
+      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full">
+        <AppLogoIcon className="h-10 w-10 object-contain" />
       </div>
-      <div className="grid flex-1 text-left text-sm">
-        <span className="font-semibold leading-tight text-foreground">
-          PAMPANGA STATE U - LC TRACERLINK
+
+      {/* Text beside logo */}
+      <div className="flex flex-col text-left leading-tight">
+        <span className="font-semibold text-sm text-foreground">
+          Pampanga State U - TracerLink
+        </span>
+        <span className="text-xs text-muted-foreground tracking-wide">
+          Lubao Campus
         </span>
       </div>
     </div>
   );
 }
+
