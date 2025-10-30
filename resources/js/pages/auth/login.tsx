@@ -12,6 +12,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AppLogoIcon from '@/components/app-logo-icon';
+import AppearanceTabs from '@/components/appearance-tabs';
 
 type LoginForm = {
   email: string;
@@ -129,9 +130,12 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
   return (
     <AuthLayout title="Log in to your account" description="Enter your credentials to access your account">
       <Head title="Log in" />
-      
+
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-2">
+            <AppearanceTabs />
+          </div>
           <div className="flex justify-center mb-4">
             <div className="bg-primary/10 rounded-full">
               <AppLogoIcon/>
