@@ -3,7 +3,6 @@ import { Eye, EyeOff, LoaderCircle, Shield, Mail, Lock } from 'lucide-react';
 import { FormEventHandler, useState, useEffect } from 'react';
 
 import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -14,19 +13,22 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import AppLogoIcon from '@/components/app-logo-icon';
 import AppearanceTabs from '@/components/appearance-tabs';
 
+// Define the shape of the login form data
 type LoginForm = {
   email: string;
   password: string;
   remember: boolean;
 };
 
+// Define the props for the Login component
 interface LoginProps {
   status?: string;
   canResetPassword: boolean;
   canRegister: boolean;
 }
 
-export default function Login({ status, canResetPassword, canRegister }: LoginProps) {
+// Login component with account lockout after multiple failed attempts
+export default function Login({ status,}: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
@@ -89,6 +91,7 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
     };
   }, [isLocked, timeRemaining]);
 
+// Form submission handler
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
     
@@ -121,12 +124,15 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
     });
   };
 
+
+  // Format time remaining as mm:ss
   const formatTimeRemaining = () => {
     const minutes = Math.floor(timeRemaining / 60);
     const seconds = timeRemaining % 60;
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
+  // Render the login form
   return (
     <AuthLayout title="Log in to your account" description="Enter your credentials to access your account">
       <Head title="Log in" />
@@ -188,11 +194,6 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  {canResetPassword && (
-                    <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                      Forgot password?
-                    </TextLink>
-                  )}
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -254,15 +255,6 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
                 )}
               </Button>
             </div>
-
-            {canRegister && (
-              <div className="text-center text-sm text-muted-foreground">
-                Don't have an account?{' '}
-                <TextLink href={route('register')} tabIndex={6}>
-                  Sign up
-                </TextLink>
-              </div>
-            )}
           </form>
         </CardContent>
       </Card>
