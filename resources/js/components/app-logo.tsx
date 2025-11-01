@@ -13,9 +13,6 @@ export default function AppLogo() {
         <span className="font-semibold text-sm text-foreground">
           Pampanga State U - TracerLink
         </span>
-        <span className="text-xs text-muted-foreground tracking-wide">
-          Lubao Campus
-        </span>
       </div>
     </div>
   );
