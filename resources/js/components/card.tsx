@@ -13,7 +13,7 @@ export function SectionCards({ programs = [] }: { programs: Program[] }) {
     const programCount = programs.length;
 
     return (
-        <div className="w-full bg-gray-50 px-6 py-6 dark:bg-zinc-950">
+        <div className="w-full bg-gray-50 px-0 py-6 dark:bg-zinc-950">
             <div className="mb-6">
                 <h1 className="font-semibold text-gray-800 dark:text-gray-200">Program Statistics</h1>
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Overview of response metrics across all programs</p>
