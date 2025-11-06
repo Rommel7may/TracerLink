@@ -31,11 +31,17 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
+            $message = [
+            'student_number.regex' => 'The student number must be exactly 10 digits.',
+            'student_number.unique' => 'The student number has already been taken.',
+            'email.unique' => 'The email has already been taken.',
+        ];
+        
         $validated = $request->validate([
-            'student_number' => 'required|string|unique:students',
+            'student_number' => 'required|string|unique:students|regex:/^[0-9]{10}$/',
             'student_name'   => 'required|string|max:255',
-            'email'          => 'required|email|unique:students',
-            'year'           => 'required|integer|min:2022|max:' . date('Y'), // ✅ limit from 2022-current year
+            'email'          => 'nullable|email|unique:students',
+            'year'           => 'required|integer|min:2022|max:' . date('Y'), //imit from 2022-current year
         ]);
 
         $student = Student::create($validated);
@@ -52,8 +58,9 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        
         $validated = $request->validate([
-            'student_number' => 'required|string|unique:students,student_number,' . $student->id,
+            'student_number' => 'required|string|unique:students|regex:/^[0-9]{10}$/',
             'student_name'   => 'required|string|max:255',
             'email'          => 'nullable|email|unique:students,email,' . $student->id,
             'year'           => 'required|integer|min:2022|max:' . date('Y'),

@@ -10,7 +10,7 @@ class Student extends Model
     'student_number',
     'student_name',
     'email',
-    'year', // <- add
+    'year',
 ];
 
 
