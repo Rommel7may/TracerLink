@@ -28,6 +28,7 @@ class AlumniController extends Controller
     /**
      * 📋 Return alumni list as JSON (for React table)
      */
+    //✅ List alumni with optional program filter
     public function index(Request $request)
     {
         $program_id = $request->input('program_id');

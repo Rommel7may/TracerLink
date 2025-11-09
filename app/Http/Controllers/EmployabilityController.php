@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller for employability data display
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Alumni;

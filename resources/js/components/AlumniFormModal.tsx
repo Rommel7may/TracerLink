@@ -1,5 +1,3 @@
-// resources/js/components/AlumniFormModal.tsx
-import * as React from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { AlumniForm } from './AlumniForm';
 

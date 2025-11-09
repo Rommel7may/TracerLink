@@ -1,5 +1,5 @@
 <?php
-
+// Controller for total graduates data aggregation
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

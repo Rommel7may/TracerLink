@@ -7,7 +7,7 @@ use App\Models\Alumni;
 use Inertia\Inertia;
 use Illuminate\Validation\Rule;
 use App\Events\AlumniCreated;
-
+// Controller for public alumni form handling
 class AlumniFormController extends Controller
 {
     // 📄 Show the blank public form

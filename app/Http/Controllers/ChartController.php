@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Alumni;
 use App\Models\Program;
-
+// Controller for alumni-related chart data
 class ChartController extends Controller
 {
     /**

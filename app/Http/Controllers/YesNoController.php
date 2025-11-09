@@ -1,5 +1,5 @@
 <?php
-
+// Controller for yes/no/unsure data visualization
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

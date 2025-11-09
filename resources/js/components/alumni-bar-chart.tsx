@@ -1,5 +1,7 @@
 'use client';
 
+// Alumni Employment Bar Chart Component
+
 import { Briefcase, Target, TrendingUp, Users, UserX } from 'lucide-react';
 import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, XAxis, YAxis } from 'recharts';

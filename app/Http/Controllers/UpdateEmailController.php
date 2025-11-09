@@ -1,5 +1,5 @@
 <?php
-
+// Controller for sending emails to students and alumni
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

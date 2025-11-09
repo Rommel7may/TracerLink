@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller
 use App\Models\Alumni;
 
 class GenderChartController extends Controller

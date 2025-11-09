@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller for sending emails to students and alumni
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Student;

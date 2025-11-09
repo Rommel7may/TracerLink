@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Dashboard controller showing program and alumni statistics
 use App\Models\Program;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;

@@ -1,5 +1,7 @@
 'use client';
 
+// Alumni Form Component
+
 import { StarRating } from '@/components/StarRating';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

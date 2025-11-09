@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller for managing job posts
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\JobPost;

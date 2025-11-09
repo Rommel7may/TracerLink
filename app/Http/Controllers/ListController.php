@@ -1,5 +1,5 @@
 <?php
-
+// Controller for list resource management
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;

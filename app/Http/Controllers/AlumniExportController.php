@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Alumni export to Excel with formatting
 use App\Models\Alumni;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

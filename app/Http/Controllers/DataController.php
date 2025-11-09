@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller for data resource management
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

@@ -131,9 +131,9 @@ class StudentController extends Controller
         ->with('success', "{$inserted} students imported successfully!");
 }
 
-    /**
-     * Bulk delete.
-     */
+ 
+
+    // Bulk delete students
     public function bulkDelete(Request $request)
     {
         $ids = $request->input('ids', []);

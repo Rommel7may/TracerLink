@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller for Job Form display for alumni
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Alumni;

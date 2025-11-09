@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller for Job Inbox display
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

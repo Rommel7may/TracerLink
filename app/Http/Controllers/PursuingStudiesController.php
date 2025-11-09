@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// Controller for pursuing studies data visualization
 use App\Models\Alumni;
 use Illuminate\Http\Request;
 

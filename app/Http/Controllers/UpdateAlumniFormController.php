@@ -1,5 +1,5 @@
 <?php
-
+// Controller for updating alumni info from signed email link
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
