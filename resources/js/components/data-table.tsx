@@ -598,7 +598,7 @@ export function AlumniTable() {
 
                             {/* gender filter */}
                             <div className="space-y-1">
-                                <label className="text-sm font-medium">Gender Location</label>
+                                <label className="text-sm font-medium">Sex</label>
                                 <Select
                                     onValueChange={(val) => {
                                         if (val === '__clear__') {
