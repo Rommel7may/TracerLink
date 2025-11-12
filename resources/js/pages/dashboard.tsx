@@ -48,7 +48,7 @@ export default function dashboard({
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Dashboard" />
 
-      <div>
+      <div className="px-5">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
         </div>
