@@ -363,14 +363,6 @@ export function AlumniTable() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            {/* <DropdownMenuItem
-                onClick={() => {
-                  setEditingAlumni(alumni);
-                  setShowAddModal(true);
-                }}
-              >
-                Edit
-              </DropdownMenuItem> */}
                             <DropdownMenuItem
                                 className="text-red-600 hover:text-red-500"
                                 onClick={() => handleDelete(alumni.id)}
@@ -632,27 +624,7 @@ export function AlumniTable() {
                 {/* Action Buttons */}
                 <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-3">
-                        {/* Combined New button */}
-                        {/* <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <PlusIcon className="h-4 w-4" />
-                  New
-                  <ChevronDownIcon className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => setShowAddModal(true)}>
-                  <PlusIcon className="mr-2 h-4 w-4" />
-                  Add Student
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setImportOpen(true)}>
-                  <PlusIcon className="mr-2 h-4 w-4" />
-                  Import Alumni
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu> */}
-
+             
                         <div className="flex gap-2">
                             <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
                                 <PlusIcon className="h-4 w-4" />
