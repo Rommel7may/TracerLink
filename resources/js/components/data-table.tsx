@@ -342,7 +342,7 @@ export function AlumniTable() {
         { accessorKey: 'given_name', header: 'Given Name', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'middle_initial', header: 'M.I.', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'present_address', header: 'Present address.', cell: ({ getValue }) => getValue() || 'N/A' },
-        { accessorKey: 'sex', header: 'Sex', cell: ({ getValue }) => getValue() || 'N/A', filterFn: (row, columnId, filterValue) => ((row.getValue(columnId) as string || '').toLowerCase() === filterValue.toLowerCase()) },
+        { accessorKey: 'sex', header: 'Sex', cell: ({ getValue }) => { const v = getValue() as string | undefined; return v ? <span className="capitalize">{v}</span> : 'N/A'; }, filterFn: (row, columnId, filterValue) =>((row.getValue(columnId) as string || '').toLowerCase() === filterValue.toLowerCase()), },
         { accessorKey: 'graduation_year', header: 'Grad Year', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'employment_status', header: 'Employment', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'company_name', header: 'Company', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
@@ -608,8 +608,8 @@ export function AlumniTable() {
                                         <SelectItem className="bg-red-500/10" value="__clear__">
                                             Clear filter
                                         </SelectItem>
-                                        <SelectItem value="male">Male</SelectItem>
-                                        <SelectItem value="female">Female</SelectItem>
+                                        <SelectItem value="Male">Male</SelectItem>
+                                        <SelectItem value="Female">Female</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -845,7 +845,7 @@ export function AlumniTable() {
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell className="capitalize" key={cell.id}>
+                                            <TableCell key={cell.id}>
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
                                         ))}
