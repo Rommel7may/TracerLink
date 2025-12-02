@@ -2,15 +2,15 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageProps } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
-import {ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, SortingState, useReactTable,} from '@tanstack/react-table';
+import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, SortingState, useReactTable, } from '@tanstack/react-table';
 import axios from 'axios';
-import { ChevronDown, ChevronsUpDown, ChevronUp, DownloadIcon, FileUp, Loader2, Menu, MoreHorizontal, PlusIcon, Search, Trash, Upload, X,} from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, ChevronUp, DownloadIcon, FileUp, Loader2, Menu, MoreHorizontal, PlusIcon, Search, Trash, Upload, X, } from 'lucide-react';
 import * as React from 'react';
 import { toast, Toaster } from 'sonner';
 import { saveAs } from 'file-saver';
@@ -426,7 +426,7 @@ export default function StudentIndex() {
                     </div>
 
                     <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
-                        <Button
+                        {/* <Button
                             onClick={() => {
                                 reset();
                                 setEditId(null);
@@ -436,7 +436,20 @@ export default function StudentIndex() {
                         >
                             <PlusIcon className="h-4 w-4" />
                             <span className="hidden sm:inline">Add New</span>
+                        </Button> */}
+                        <Button
+                        size="sm"
+                            onClick={() => {
+                                reset()
+                                setEditId(null)
+                                setShowModal(true)
+                            }}
+                            className="w-full gap-2 md:w-auto border-2 border-dashed border-primary bg-transparent text-primary hover:bg-primary/10"
+                        >
+                            <PlusIcon className="h-4 w-4" />
+                            <span className="hidden sm:inline">Add New</span>
                         </Button>
+
                     </div>
 
                     {selectedCount > 0 && (
@@ -643,7 +656,7 @@ export default function StudentIndex() {
                             <Button type="button" variant="ghost" onClick={() => setShowUploadModal(false)} className="w-full sm:w-auto">
                                 Cancel
                             </Button>
-                            
+
                             <Button type="submit" disabled={!excelFile || importLoading} className="w-full sm:w-auto">
                                 {importLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className=" h-4 w-4" />}
                                 {importLoading ? 'Importing...' : 'Import'}
@@ -661,7 +674,8 @@ export default function StudentIndex() {
                         <DialogDescription>Are you sure you want to delete this student? This action cannot be undone.</DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-0">
-                        <Button
+                        <div className='space-x-2'>
+                            <Button
                             type="button"
                             variant="outline"
                             onClick={() => setShowDeleteModal(false)}
@@ -680,6 +694,8 @@ export default function StudentIndex() {
                                 'Delete'
                             )}
                         </Button>
+                        </div>
+                        
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

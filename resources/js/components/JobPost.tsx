@@ -471,8 +471,8 @@ export default function JobPost() {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-2">
-                    <Button onClick={openAdd} className="sm:w-auto">
-                       <PlusIcon className="mr-2 h-4 w-4" /> Add Job Post
+                    <Button size="sm" onClick={openAdd} className="sm:w-auto  border-2 border-dashed border-primary bg-transparent text-primary hover:bg-primary/20">
+                       <PlusIcon className="mr-2 h-4 w-4 " /> Add Job Post
                     </Button>
                     {/* <Button variant="secondary" onClick={() => setShowAllEmployedModal(true)} className="sm:w-auto">
                         <Send className="mr-2 h-4 w-4" />
