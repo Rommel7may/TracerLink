@@ -342,7 +342,7 @@ export function AlumniTable() {
         { accessorKey: 'given_name', header: 'Given Name', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'middle_initial', header: 'M.I.', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'present_address', header: 'Present address.', cell: ({ getValue }) => getValue() || 'N/A' },
-        { accessorKey: 'sex', header: 'Sex', cell: ({ getValue }) => { const v = getValue() as string | undefined; return v ? <span className="capitalize">{v}</span> : 'N/A'; }, filterFn: (row, columnId, filterValue) =>((row.getValue(columnId) as string || '').toLowerCase() === filterValue.toLowerCase()), },
+        { accessorKey: 'sex', header: 'Sex', cell: ({ getValue }) => { const v = getValue() as string | undefined; return v ? <span className="capitalize">{v}</span> : 'N/A'; }, filterFn: (row, columnId, filterValue) => ((row.getValue(columnId) as string || '').toLowerCase() === filterValue.toLowerCase()), },
         { accessorKey: 'graduation_year', header: 'Grad Year', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'employment_status', header: 'Employment', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
         { accessorKey: 'company_name', header: 'Company', filterFn: 'equals', cell: ({ getValue }) => getValue() || 'N/A' },
@@ -624,15 +624,15 @@ export function AlumniTable() {
                 {/* Action Buttons */}
                 <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-3">
-             
+
                         <div className="flex gap-2">
                             <Button size="sm"
-  onClick={() => setShowAddModal(true)}
-  className="flex items-center gap-2 border-2 border-dashed border-primary bg-transparent text-primary hover:bg-primary/20"
->
-  <PlusIcon className="h-4 w-4" />
-  Add New
-</Button>
+                                onClick={() => setShowAddModal(true)}
+                                className="flex items-center gap-2 border-2 border-dashed border-primary bg-transparent text-primary hover:bg-primary/20"
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                                Add New
+                            </Button>
 
                         </div>
 

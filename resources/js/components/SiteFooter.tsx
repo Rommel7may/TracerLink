@@ -9,12 +9,12 @@ export interface SiteFooterProps {
 export function SiteFooter({ className = "", showFooter = true }: SiteFooterProps) {
     if (!showFooter) return null
     const team = [
-        { name: "Rommel Aniciete", role: "Frontend Developer" },
-        { name: "Jhonamar Bernardo", role: "Fullstack Developer" },
-        { name: "Riana Marie Manansala", role: "Full stack paper" },
-        { name: "Andrew Manalansan", role: "Runner" },
-        { name: "John Andrey Orogo", role: "Manager" },
-        { name: "Aj Rafael", role: "Tester" },
+        { name: "Rommel Aniciete", role: "UI/UX Designer/Frontend Developer" },
+        { name: "Jhonamar Bernardo", role: "Backend Developer" },
+        { name: "Riana Marie Manansala", role: "System Analyst/Technical Writer" },
+        { name: "Andrew Manalansan", role: "Design Assistant/Financial Manager" },
+        { name: "John Andrey Orogo", role: "Printing Officer/Financial Manager" },
+        { name: "Aj Rafael", role: "Logistic Support/Financial Manager" },
     ]
 
     return (

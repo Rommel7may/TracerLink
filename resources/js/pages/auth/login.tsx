@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { Eye, EyeOff, LoaderCircle, Shield, Mail, Lock } from 'lucide-react';
 import { FormEventHandler, useState, useEffect } from 'react';
 
@@ -159,7 +159,7 @@ export default function Login({ status,}: LoginProps) {
               <AlertDescription className="text-green-800">{status}</AlertDescription>
             </Alert>
           )}
-          
+          {/* Removed old alert - using button instead */}  
           {isLocked && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>
@@ -234,6 +234,13 @@ export default function Login({ status,}: LoginProps) {
                   />
                   <Label htmlFor="remember" className="text-sm">Remember me</Label>
                 </div>
+                <Link 
+                  href={route('password.request')} 
+                  className="text-sm underline"
+                  tabIndex={4}
+                >
+                  Forgot password?
+                </Link>
               </div>
               
               <Button 
