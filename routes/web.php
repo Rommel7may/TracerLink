@@ -127,7 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 🧠 API for Frontend Fetching
     Route::get('/alumni-form', [ProgramController::class, 'create']);
     Route::get('/alumni/create', [AlumniController::class, 'create']);
-    Route::get('/api/programs', fn () => \App\Models\Program::all());
+    Route::get('/api/programs', fn () => \App\Models\Program::select('id', 'name')->orderBy('name')->get());
 
     // ✅ Import Alumni (main + alias para sa React)
     Route::post('/alumni/import', [AlumniImportController::class, 'import'])->name('alumni.import');

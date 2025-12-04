@@ -12,7 +12,7 @@ import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginat
 import axios from 'axios';
 import { ChevronDown, ChevronsUpDown, ChevronUp, DownloadIcon, FileUp, Loader2, Menu, MoreHorizontal, PlusIcon, Search, Trash, Upload, X, } from 'lucide-react';
 import * as React from 'react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { SendEmailToSelected } from './SendEmailToProgram';
@@ -127,9 +127,8 @@ export default function StudentIndex() {
             setShowUploadModal(false);
             router.reload();
             setExcelFile(null);
-        } catch (err: any) {
-            console.error('Import error:', err);
-            toast.error(err.response?.data?.message || 'Import failed!');
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Import failed!';
         } finally {
             setImportLoading(false);
         }
@@ -187,9 +186,9 @@ export default function StudentIndex() {
             toast.success('Student deleted!');
             setShowDeleteModal(false);
             setDeleteId(null);
-        } catch (err) {
-            console.error('Delete error:', err);
-            toast.error('Failed to delete student ❌');
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message : 'Failed to delete student ❌';
+            toast.error(errorMessage);
         } finally {
             setDeleteLoading(false);
         }
@@ -213,9 +212,9 @@ export default function StudentIndex() {
             toast.success('Selected students deleted!');
             setRowSelection({});
             setShowBulkDeleteModal(false);
-        } catch (err) {
-            console.error('Bulk delete error:', err);
-            toast.error('Failed to delete selected students ❌');
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message : 'Failed to delete selected students ❌';
+            toast.error(errorMessage);
         } finally {
             setBulkDeleteLoading(false);
         }
@@ -379,7 +378,6 @@ export default function StudentIndex() {
 
     return (
         <div className="w-full p-4 sm:p-6">
-            <Toaster position="top-right" richColors closeButton />
 
             {/* Mobile Menu Button */}
             <div className="mb-4 block md:hidden">

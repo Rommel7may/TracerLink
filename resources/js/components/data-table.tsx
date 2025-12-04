@@ -85,17 +85,14 @@ export function AlumniTable() {
     }, [currentYear]);
 
     const fetchAlumni = () => {
-        console.log('🔄 fetchAlumni() called');
         setLoading(true);
         axios
             .get('/alumni-data')
             .then((response) => {
-                console.log('✅ Alumni data fetched:', response.data.length, 'items');
                 setAlumniData([...response.data]);
                 setLoading(false);
             })
-            .catch((error) => {
-                console.error('❌ Error fetching alumni data:', error);
+            .catch(() => {
                 setLoading(false);
             });
     };
@@ -104,7 +101,9 @@ export function AlumniTable() {
         axios
             .get('/api/programs')
             .then((res) => setPrograms(res.data))
-            .catch((err) => console.error('❌ Failed to fetch program list:', err));
+            .catch(() => {
+                // Failed to fetch programs
+            });
     };
 
     const handleDelete = (id?: number) => {
@@ -118,8 +117,7 @@ export function AlumniTable() {
                 setAlumniData((prev) => prev.filter((a) => a.id !== id));
                 toast.success('Deleted successfully');
             })
-            .catch((err) => {
-                console.error('Delete failed:', err);
+            .catch(() => {
                 toast.error('Delete failed.');
             })
             .finally(() => {
@@ -146,8 +144,7 @@ export function AlumniTable() {
             setRowSelection({});
             setBulkDeleteOpen(false);
             toast.success(`Deleted ${selectedIds.length} records successfully`);
-        } catch (err) {
-            console.error('Bulk delete failed:', err);
+        } catch {
             toast.error('Bulk delete failed.');
         } finally {
             setBulkDeleteLoading(false);
@@ -183,9 +180,10 @@ export function AlumniTable() {
 
             setSendEmailOpen(false);
             setRowSelection({});
-        } catch (err: any) {
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message : 'Something went wrong.';
             toast.error('Failed to send emails', {
-                description: err?.response?.data?.message || 'Something went wrong.',
+                description: errorMessage,
             });
         } finally {
             setSendEmailLoading(false);
@@ -211,9 +209,10 @@ export function AlumniTable() {
             fetchAlumni();
             setImportOpen(false);
             setImportFile(null);
-        } catch (err: any) {
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message : 'Something went wrong.';
             toast.error('Import failed ❌', {
-                description: err?.response?.data?.message || 'Something went wrong.',
+                description: errorMessage,
             });
         } finally {
             setImportLoading(false);
@@ -227,47 +226,27 @@ export function AlumniTable() {
 
     // WebSocket connection for real-time updates
     React.useEffect(() => {
-        console.log('Connecting to Reverb WebSocket for alumni updates...');
-
         // Only run on client side
         if (typeof window === 'undefined') {
-            console.log('Skipping WebSocket on server side');
             return;
         }
 
         if (!echo) {
-            console.error('Echo instance is not available');
             return;
-        }
-
-        console.log('Echo instance found');
-
-        // Add connection event listeners for debugging
-        const connector = echo.connector as any;
-
-        if (connector.pusher && connector.pusher.connection) {
-            connector.pusher.connection.bind('connected', () => {
-                console.log('WebSocket connected successfully!');
-            });
-
-            connector.pusher.connection.bind('error', (error: any) => {
-                console.error('WebSocket connection error:', error);
-            });
         }
 
         // Add a small delay to ensure everything is loaded
         const connectionTimeout = setTimeout(() => {
             try {
-                console.log('Creating WebSocket channel...');
-
                 // Subscribe to the alumni channel
                 const channel = echo.channel('alumni');
 
-                console.log('Channel created');
+                interface AlumniEvent {
+                    given_name: string;
+                    last_name: string;
+                }
 
-                const listener = (e: any) => {
-                    console.log('AlumniCreated event received:', e);
-
+                const listener = (e: AlumniEvent) => {
                     // Refresh the data from server
                     fetchAlumni();
 
@@ -276,10 +255,8 @@ export function AlumniTable() {
 
                 // Listen for the event
                 channel.listen('.AlumniCreated', listener);
-
-                console.log('Successfully subscribed to alumni channel');
-            } catch (error) {
-                console.error('Error setting up WebSocket connection:', error);
+            } catch {
+                // Error setting up WebSocket connection
             }
         }, 1000); // 1 second delay
 
@@ -289,10 +266,9 @@ export function AlumniTable() {
             try {
                 if (echo) {
                     echo.leaveChannel('alumni');
-                    console.log('Left alumni channel');
                 }
-            } catch (error) {
-                console.error('Error leaving channel:', error);
+            } catch {
+                // Error leaving channel
             }
         };
     }, []); // Empty dependency array
@@ -439,9 +415,10 @@ export function AlumniTable() {
             link.remove();
 
             toast.success('Filtered alumni exported ✅');
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message : 'Something went wrong.';
             toast.error('Export failed ❌', {
-                description: error?.response?.data?.message || 'Something went wrong.',
+                description: errorMessage,
             });
         } finally {
             setExportLoading(false);

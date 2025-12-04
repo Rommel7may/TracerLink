@@ -22,13 +22,11 @@ export function SiteFooter({ className = "", showFooter = true }: SiteFooterProp
             <div className="py-8 border-t mt-6 text-center">
 
                 <p className="text-sm text-muted-foreground">
-                     <span className="font-semibold">Alumni Tracerlink</span>
+                    <span className="font-semibold">Alumni Tracerlink</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                    Developed by <span className="font-medium">BS in Information Technology - 4C</span>
+                <p className="text-xs text-muted-foreground mt-2">
+                    A capstone project by <span className="font-medium">BS in Information Technology - 4C</span>
                 </p>
-             
-
 
                 {/* Team Members */}
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-sm">
